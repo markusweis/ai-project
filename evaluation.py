@@ -6,16 +6,18 @@ import sys
 
 from graph import Graph
 from part import Part
-from prediction_models.base_prediction_model import MyPredictionModel
+from prediction_models.base_prediction_model import BasePredictionModel
 from prediction_models.neural_network_prediction_model import NeuralNetworkPredictionModel
 from prediction_models.prediction_models_enum import PredictionModels, get_model_class
 
+# LOADED_MODEL_TYPE = PredictionModels.STRAIGHT_LINE_PSEUDO_PREDICTION_MODEL.value
+
 
 LOADED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
-LOADED_MODEL_PATH = "prediction_models/model_instances/test_model"
+LOADED_MODEL_PATH = "prediction_models/model_instances/test_model.pth"
 
 
-def load_model(file_path: str, model_type: str = LOADED_MODEL_TYPE) -> MyPredictionModel:
+def load_model(file_path: str, model_type: str = LOADED_MODEL_TYPE) -> BasePredictionModel:
     """
         This method loads the prediction model from a file (needed for evaluating your model on the test set).
         :param file_path: path to file
@@ -25,7 +27,7 @@ def load_model(file_path: str, model_type: str = LOADED_MODEL_TYPE) -> MyPredict
     return model_class.load_from_file(file_path=file_path)
 
 
-def evaluate(model: MyPredictionModel, data_set: List[Tuple[Set[Part], Graph]]) -> float:
+def evaluate(model: BasePredictionModel, data_set: List[Tuple[Set[Part], Graph]]) -> float:
     """
     Evaluates a given prediction model on a given data set.
     :param model: prediction model
@@ -115,9 +117,10 @@ if __name__ == '__main__':
     # Load the final model
     model_type = LOADED_MODEL_TYPE if len(sys.argv) < 2 else sys.argv[1]
     model_file_path = LOADED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
-    prediction_model: MyPredictionModel = load_model(model_file_path, model_type=model_type)
+    prediction_model: BasePredictionModel = load_model(model_file_path, model_type=model_type)
 
     # For illustration, compute eval score on train data
     instances = [(graph.get_parts(), graph) for graph in train_graphs[:100]]
     # TODO: Extract training / evaluation / test data separation to a separate file and make sure it is unbiased
     eval_score = evaluate(prediction_model, instances)
+    print(f"eval_score: {eval_score}")

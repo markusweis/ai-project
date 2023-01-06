@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Unittests",
             "type": "python",
             "request": "launch",
@@ -12,10 +20,18 @@
             "justMyCode": true
         },
         {
-            "name": "Python: Current File",
+            "name": "Training",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "training.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Evaluation",
+            "type": "python",
+            "request": "launch",
+            "program": "evaluation.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

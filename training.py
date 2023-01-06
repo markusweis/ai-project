@@ -6,13 +6,13 @@ import sys
 
 from graph import Graph
 from part import Part
-from prediction_models.base_prediction_model import MyPredictionModel
+from prediction_models.base_prediction_model import BasePredictionModel
 from prediction_models.neural_network_prediction_model import NeuralNetworkPredictionModel
 from prediction_models.prediction_models_enum import PredictionModels, get_model_class
 
 
 SELECTED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
-SELECTED_MODEL_PATH = "prediction_models/model_instances/test_model"
+SELECTED_MODEL_PATH = "prediction_models/model_instances/test_model.pth"
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -28,5 +28,5 @@ if __name__ == '__main__':
     model_file_path = SELECTED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
 
     model_class = get_model_class(model_type)
-    new_model_instance = model_class()
-    new_model_instance.train_and_store(train_graphs=train_graphs[100:], file_path=model_file_path)
+    new_model_instance: BasePredictionModel = model_class.train_new_instance(train_graphs=train_graphs[100:])
+    new_model_instance.store_model(model_file_path)

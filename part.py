@@ -42,7 +42,7 @@ class Part:
                (other.get_part_id(), other.get_family_id())
 
     def get_part_id(self) -> int:
-        return self.__part_id
+        return int(self.__part_id)
 
     def get_family_id(self) -> int:
-        return self.__family_id
+        return int(self.__family_id)
