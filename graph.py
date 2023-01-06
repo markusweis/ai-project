@@ -8,6 +8,8 @@ from typing import Dict, List, Set, Tuple, Union
 from node import Node
 from part import Part
 
+TEMPORARY_VISUALIZATION_PATH = "temporary_graph_plot.png"
+
 
 class Graph:
     """
@@ -153,6 +155,8 @@ class Graph:
         labels = nx.get_node_attributes(graph_nx, 'info')
         nx.draw(graph_nx, labels=labels)
         plt.show()
+        if TEMPORARY_VISUALIZATION_PATH is not None:
+            plt.savefig(TEMPORARY_VISUALIZATION_PATH)
 
     def get_edges(self) -> Dict[Node, List[Node]]:
         """
