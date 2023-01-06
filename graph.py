@@ -151,6 +151,7 @@ class Graph:
 
     def draw(self):
         """ Draws the graph with NetworkX and displays it. """
+        plt.clf()
         graph_nx = self.to_nx()
         labels = nx.get_node_attributes(graph_nx, 'info')
         nx.draw(graph_nx, labels=labels)
