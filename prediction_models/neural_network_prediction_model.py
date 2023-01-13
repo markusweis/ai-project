@@ -23,6 +23,7 @@ print(f"Using {device} device")
 
 
 class NeuralNetwork(nn.Module):
+    # TODO: maybe add as second base class to pred model
     def __init__(self):
         super().__init__()
         self.flatten = nn.Flatten()
@@ -31,7 +32,8 @@ class NeuralNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
-            nn.Linear(512, 30*30)
+            nn.Linear(512, 30*30),
+            nn.InstanceNorm1d(30*30)
         )
         self.unflatten = nn.Unflatten(1, (30, 30))
 
@@ -102,12 +104,14 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             pred = self._model(X)
 
         # TODO: create actual graph from adjacency matrix instead of this pseudo output
+        pred_thresh = torch.where(pred > 0, 1, 0)
+        graph = Graph.from_adjacency_matrix(part_list=parts_list, adjacency_matrix=pred_thresh)
 
         # Pseudo output:
-        graph = Graph()
-        parts_list = list(parts) 
-        for i in range(len(parts_list) - 1):
-            graph.add_undirected_edge(parts_list[i], parts_list[i+1])
+        # graph = Graph()
+        # parts_list = list(parts) 
+        # for i in range(len(parts_list) - 1):
+        #     graph.add_undirected_edge(parts_list[i], parts_list[i+1])
     
         return graph
 

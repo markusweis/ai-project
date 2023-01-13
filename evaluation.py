@@ -38,6 +38,7 @@ def evaluate(model: BasePredictionModel, data_set: List[Tuple[Set[Part], Graph]]
     edges_counter = 0
 
     for input_parts, target_graph in data_set:
+        print("Testing instance..")
         predicted_graph = model.predict_graph(input_parts)
 
         edges_counter += len(input_parts) * len(input_parts)

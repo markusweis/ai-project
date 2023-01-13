@@ -1,4 +1,5 @@
 import copy
+from datetime import datetime
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -80,7 +81,7 @@ class Graph:
 
         return node
 
-    def __add_node(self, node):
+    def add_node(self, node):
         """ Adds a node to the internal set of nodes. """
         self.__nodes.add(node)
 
@@ -94,6 +95,12 @@ class Graph:
         """
         self.__add_edge(part1, part2)
         self.__add_edge(part2, part1)
+
+    def add_node_without_edge(self, part: Part):
+        node = Node(self.__node_counter, part)
+        self.__node_counter += 1
+        self.add_node(node)
+        self.__edges[node] = []
 
     def __add_edge(self, source: Part, sink: Part):
         """
@@ -110,9 +117,9 @@ class Graph:
         self.__contains_cycle = None
 
         source_node = self.__get_node_for_part(source)
-        self.__add_node(source_node)
+        self.add_node(source_node)
         sink_node = self.__get_node_for_part(sink)
-        self.__add_node(sink_node)
+        self.add_node(sink_node)
 
         # check if source node has already outgoing edges
         if source_node not in self.get_edges().keys():
@@ -258,4 +265,19 @@ class Graph:
                     adj_matrix[idx, idx2] = adj_matrix[idx2, idx] = 1
 
         return adj_matrix
+
+    @classmethod
+    def from_adjacency_matrix(cls, part_list: List[Part], adjacency_matrix: np.ndarray):
+        graph: Graph = Graph(datetime.now())
+        # node_list = [Node(i, part) for (i, part) in enumerate(part_list)]
+        for part in part_list:
+            graph.add_node_without_edge(part)
+        
+        for row in range(len(part_list)):
+            for col in range(row, len(part_list)):
+                if adjacency_matrix[0][row][col] == 1:
+                    graph.add_undirected_edge(part_list[row], part_list[col])
+        
+        return graph
+
 
