@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/18787b7787084eee96f65393bfcf6ea2/artifacts
+end_time: 1674830613020
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 18787b7787084eee96f65393bfcf6ea2
+run_name: honorable-asp-875
+run_uuid: 18787b7787084eee96f65393bfcf6ea2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1674830612956
+status: 4
+tags: []
+user_id: Markus

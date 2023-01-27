@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/69e5626cad9b459ca0d160be10c89cbb/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 69e5626cad9b459ca0d160be10c89cbb
+run_name: wise-crab-872
+run_uuid: 69e5626cad9b459ca0d160be10c89cbb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1674832598815
+status: 1
+tags: []
+user_id: Markus

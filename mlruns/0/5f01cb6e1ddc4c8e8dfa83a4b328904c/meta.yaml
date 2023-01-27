@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/5f01cb6e1ddc4c8e8dfa83a4b328904c/artifacts
+end_time: 1674833449941
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5f01cb6e1ddc4c8e8dfa83a4b328904c
+run_name: learned-snake-889
+run_uuid: 5f01cb6e1ddc4c8e8dfa83a4b328904c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1674832746605
+status: 3
+tags: []
+user_id: Markus

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/67a0792b0fd3460dbe8ca91d90fb501a/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 67a0792b0fd3460dbe8ca91d90fb501a
+run_name: bald-bear-402
+run_uuid: 67a0792b0fd3460dbe8ca91d90fb501a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1674830754958
+status: 1
+tags: []
+user_id: Markus

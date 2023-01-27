@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 from torch.nn.functional import pad
+from tqdm import tqdm
 
 from graph import Graph
 from node import Node
@@ -31,9 +32,11 @@ class NeuralNetwork(nn.Module):
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(30*2, 512),
             nn.ReLU(),
-            nn.Linear(512, 512),
+            nn.Linear(512, 32),
             nn.ReLU(),
-            nn.Linear(512, 30*30),
+            nn.Linear(32, 256),
+            nn.ReLU(),
+            nn.Linear(256, 30*30),
             nn.InstanceNorm1d(30*30)
         )
         self.unflatten = nn.Unflatten(1, (30, 30))
@@ -77,7 +80,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
     def __init__(self):
         self._model: NeuralNetwork = NeuralNetwork().to(device)
         self._loss_fn = nn.SmoothL1Loss()
-        self._optimizer = torch.optim.SGD(self._model.parameters(), lr=1e-3)
+        self._optimizer = torch.optim.SGD(self._model.parameters(), lr=0.05)
         print("Using model:")
         print(self._model)
 
@@ -128,23 +131,36 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         return loaded_instance
     
     @classmethod
-    def train_new_instance(cls, train_graphs: List[Graph]):
+    def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray):
         """
         This method trains the prediction model with the given graphs 
         :param train_graphs: List of graphs to train with        
         """
         new_instance = cls()
         print("Loading training data...")
-        graphs_dataset = CustomGraphDataset(train_graphs)
-        graphs_dataloader = DataLoader(graphs_dataset, batch_size=64, shuffle=True)
-        # graphs_dataloader = test_dataloader
+        train_dataset = CustomGraphDataset(train_set)
+        train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+
+        val_dataset = CustomGraphDataset(val_set)
+        val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=False)
+        
         
         print("Starting training...")
-        epochs = 1
+        epochs = 8
+        mlflow.log_param("epochs", epochs)
         for t in range(epochs):
-            print(f"Epoch {t+1}\n-------------------------------")
-            new_instance._train(dataloader=graphs_dataloader)
-                
+            print(f"Epoch {t+1}")
+            new_instance._train(dataloader=train_dataloader)
+
+            # loss on validation set
+            loss = 0
+            for X, y in val_dataloader:
+                X, y = X.to(device), y.to(device)
+                pred = new_instance._model(X)
+                loss += new_instance._loss_fn(pred, y)
+            normalized_val_loss = loss / (len(val_set) / 64) # is the normlaization correct? 
+            mlflow.log_metric("val loss", normalized_val_loss, (t + 1) * len(train_set) )
+            print(f"validation loss: {normalized_val_loss}")    
         return new_instance
 
 
@@ -159,19 +175,17 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
     def _train(self, dataloader):
         size = len(dataloader.dataset)
         self._model.train()
-        for batch, (X, y) in enumerate(dataloader):
+        progress_bar = tqdm(dataloader) # Wraps progress bar around an interable 
+        for (X, y) in progress_bar:
             X, y = X.to(device), y.to(device)
 
             # Compute prediction error
             pred = self._model(X)
             loss = self._loss_fn(pred, y)
-            mlflow.log_metric("loss", loss)
+            mlflow.log_metric("train_loss", loss)
 
             # Backpropagation
             self._optimizer.zero_grad()
             loss.backward()
             self._optimizer.step()
-
-            if batch % 100 == 0:
-                loss, current = loss.item(), batch * len(X)
-                print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+            progress_bar.set_description(str(loss.item()))

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/c2d7c3e4e27d46d3a2c07ea8f7149344/artifacts
+end_time: 1674830724920
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c2d7c3e4e27d46d3a2c07ea8f7149344
+run_name: mercurial-ram-912
+run_uuid: c2d7c3e4e27d46d3a2c07ea8f7149344
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1674830648083
+status: 4
+tags: []
+user_id: Markus

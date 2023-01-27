@@ -12,3 +12,4 @@ torchvision
 torchaudio
 
 mlflow
+tqdm
