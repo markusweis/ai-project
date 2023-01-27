@@ -14,6 +14,7 @@ from graph import Graph
 from node import Node
 from part import Part
 from prediction_models.base_prediction_model import BasePredictionModel
+import mlflow
 
 MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
 
@@ -139,7 +140,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         # graphs_dataloader = test_dataloader
         
         print("Starting training...")
-        epochs = 5
+        epochs = 1
         for t in range(epochs):
             print(f"Epoch {t+1}\n-------------------------------")
             new_instance._train(dataloader=graphs_dataloader)
@@ -164,6 +165,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             # Compute prediction error
             pred = self._model(X)
             loss = self._loss_fn(pred, y)
+            mlflow.log_metric("loss", loss)
 
             # Backpropagation
             self._optimizer.zero_grad()

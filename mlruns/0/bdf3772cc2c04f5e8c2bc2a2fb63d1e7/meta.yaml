@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/bdf3772cc2c04f5e8c2bc2a2fb63d1e7/artifacts
+end_time: 1674827781740
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: bdf3772cc2c04f5e8c2bc2a2fb63d1e7
+run_name: dapper-mare-574
+run_uuid: bdf3772cc2c04f5e8c2bc2a2fb63d1e7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1674827661022
+status: 3
+tags: []
+user_id: Markus

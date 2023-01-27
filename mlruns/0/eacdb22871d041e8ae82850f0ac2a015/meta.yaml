@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/eacdb22871d041e8ae82850f0ac2a015/artifacts
+end_time: 1674827452423
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: eacdb22871d041e8ae82850f0ac2a015
+run_name: capable-finch-736
+run_uuid: eacdb22871d041e8ae82850f0ac2a015
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1674827311865
+status: 3
+tags: []
+user_id: Markus

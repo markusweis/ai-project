@@ -3,13 +3,14 @@ import numpy as np
 import pickle
 from typing import Dict, List, Set, Tuple
 import sys
+import mlflow
 
 from graph import Graph
 from part import Part
 from prediction_models.base_prediction_model import BasePredictionModel
 from prediction_models.neural_network_prediction_model import NeuralNetworkPredictionModel
 from prediction_models.prediction_models_enum import PredictionModels, get_model_class
-
+from evaluation import eval_model_on_train_set
 
 SELECTED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
 SELECTED_MODEL_PATH = "prediction_models/model_instances/test_model.pth"
@@ -28,5 +29,10 @@ if __name__ == '__main__':
     model_file_path = SELECTED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
 
     model_class = get_model_class(model_type)
-    new_model_instance: BasePredictionModel = model_class.train_new_instance(train_graphs=train_graphs[100:])
-    new_model_instance.store_model(model_file_path)
+    with mlflow.start_run():
+        new_model_instance = model_class.train_new_instance(
+                train_graphs=train_graphs[100:])
+        score = eval_model_on_train_set(new_model_instance)
+        mlflow.log_metric("edge acc", score)
+
+        new_model_instance.store_model(model_file_path)

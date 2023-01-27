@@ -56,13 +56,16 @@ def edge_accuracy(predicted_graph: Graph, target_graph: Graph) -> int:
     :param target_graph:
     :return:
     """
-    assert len(predicted_graph.get_nodes()) == len(target_graph.get_nodes()), 'Mismatch in number of nodes.'
-    assert predicted_graph.get_parts() == target_graph.get_parts(), 'Mismatch in expected and given parts.'
+    assert len(predicted_graph.get_nodes()) == len(
+        target_graph.get_nodes()), 'Mismatch in number of nodes.'
+    assert predicted_graph.get_parts() == target_graph.get_parts(
+    ), 'Mismatch in expected and given parts.'
 
     best_score = 0
 
     # Determine all permutations for the predicted graph and choose the best one in evaluation
-    perms: List[Tuple[Part]] = __generate_part_list_permutations(predicted_graph.get_parts())
+    perms: List[Tuple[Part]] = __generate_part_list_permutations(
+        predicted_graph.get_parts())
 
     # Determine one part order for the target graph
     target_parts_order = perms[0]
@@ -93,35 +96,43 @@ def __generate_part_list_permutations(parts: Set[Part]) -> List[Tuple[Part]]:
         else:
             equal_parts_sets[part] = {part}
 
-    multi_occurrence_parts: List[Set[Part]] = [pset for pset in equal_parts_sets.values() if len(pset) > 1]
-    single_occurrence_parts: List[Part] = [next(iter(pset)) for pset in equal_parts_sets.values() if len(pset) == 1]
+    multi_occurrence_parts: List[Set[Part]] = [
+        pset for pset in equal_parts_sets.values() if len(pset) > 1]
+    single_occurrence_parts: List[Part] = [
+        next(iter(pset)) for pset in equal_parts_sets.values() if len(pset) == 1]
 
     full_perms: List[Tuple[Part]] = [()]
     for mo_parts in multi_occurrence_parts:
         perms = list(permutations(mo_parts))
-        full_perms = list(perms) if full_perms == [()] else [t1 + t2 for t1 in full_perms for t2 in perms]
+        full_perms = list(perms) if full_perms == [()] else [
+            t1 + t2 for t1 in full_perms for t2 in perms]
 
     # Add single occurrence parts
     full_perms = [fp + tuple(single_occurrence_parts) for fp in full_perms]
-    assert all([len(perm) == len(parts) for perm in full_perms]), 'Mismatching number of elements in permutation(s).'
+    assert all([len(perm) == len(parts) for perm in full_perms]
+               ), 'Mismatching number of elements in permutation(s).'
     return full_perms
 
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Evaluation (Select via parameter or constant)
 
-if __name__ == '__main__':
+def eval_model_on_train_set(model) -> float:
     # Load train data
     with open('data/graphs.dat', 'rb') as file:
         train_graphs: List[Graph] = pickle.load(file)
-
-    # Load the final model
-    model_type = LOADED_MODEL_TYPE if len(sys.argv) < 2 else sys.argv[1]
-    model_file_path = LOADED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
-    prediction_model: BasePredictionModel = load_model(model_file_path, model_type=model_type)
-
-    # For illustration, compute eval score on train data
+#    For illustration, compute eval score on train data
     instances = [(graph.get_parts(), graph) for graph in train_graphs[:100]]
     # TODO: Extract training / evaluation / test data separation to a separate file and make sure it is unbiased
-    eval_score = evaluate(prediction_model, instances)
+    return evaluate(model, instances)
+
+
+if __name__ == '__main__':
+    # Load the model
+    model_type = LOADED_MODEL_TYPE if len(sys.argv) < 2 else sys.argv[1]
+    model_file_path = LOADED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
+    prediction_model: BasePredictionModel = load_model(
+        model_file_path, model_type=model_type)
+
+    eval_score = eval_model_on_train_set(prediction_model)
     print(f"eval_score: {eval_score}")

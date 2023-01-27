@@ -16,3 +16,7 @@ The file 'requirements.txt' lists the required packages.
 ## Software Tests
 This project contains some software tests based on Python Unittest (https://docs.python.org/3/library/unittest.html). 
 Run `python -m unittest` from the command line in the repository root folder to execute the tests. This should automatically search all unittest files in modules or packages in the current folder and its subfolders that are named `test_*`.
+
+## MLflow
+Start Mlflow UI with ```mlflow ui```.
+It should be running on  http://localhost:5000.

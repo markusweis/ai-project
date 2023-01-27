@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/72ddb3c18892417087c8a1e10b3c752c/artifacts
+end_time: 1674827225323
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 72ddb3c18892417087c8a1e10b3c752c
+run_name: gifted-stag-584
+run_uuid: 72ddb3c18892417087c8a1e10b3c752c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1674827123109
+status: 4
+tags: []
+user_id: Markus
