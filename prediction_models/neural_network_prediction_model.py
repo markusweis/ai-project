@@ -104,7 +104,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             X = parts_tensor.to(device)
             pred = self._model(X)
 
-        # TODO: create actual graph from adjacency matrix instead of this pseudo output
+        
         pred_thresh = torch.where(pred > 0, 1, 0)
         graph = Graph.from_adjacency_matrix(part_list=parts_list, adjacency_matrix=pred_thresh)
 
