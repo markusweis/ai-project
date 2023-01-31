@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/027623d852184b7c8bcf1c29007b97c5/artifacts
+end_time: 1675186091452
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 027623d852184b7c8bcf1c29007b97c5
+run_name: upset-hound-547
+run_uuid: 027623d852184b7c8bcf1c29007b97c5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675186090451
+status: 4
+tags: []
+user_id: vscode

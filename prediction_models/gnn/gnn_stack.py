@@ -28,8 +28,8 @@ class GNNStack(torch.nn.Module):
             nn.Linear(hidden_dim, output_dim))
 
     def forward(self, x, edge_index):
-        x = x.type(torch.long)
-        edge_index = edge_index.type(torch.long)
+        x = x.type(torch.float)
+        edge_index = edge_index.type(torch.int64)
         for i in range(self.num_layers):
             x = self.convs[i](x, edge_index)
             x = F.relu(x)

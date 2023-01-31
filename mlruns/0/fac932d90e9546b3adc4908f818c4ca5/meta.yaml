@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/fac932d90e9546b3adc4908f818c4ca5/artifacts
+end_time: 1675185985561
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fac932d90e9546b3adc4908f818c4ca5
+run_name: entertaining-bass-94
+run_uuid: fac932d90e9546b3adc4908f818c4ca5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675185979584
+status: 4
+tags: []
+user_id: vscode

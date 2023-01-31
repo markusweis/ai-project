@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/4ab14f6eaa0b4415811f17032b27d2f7/artifacts
+end_time: 1675186184417
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4ab14f6eaa0b4415811f17032b27d2f7
+run_name: enchanting-shoat-205
+run_uuid: 4ab14f6eaa0b4415811f17032b27d2f7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675186183443
+status: 4
+tags: []
+user_id: vscode

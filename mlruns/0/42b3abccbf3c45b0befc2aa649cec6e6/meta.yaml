@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/42b3abccbf3c45b0befc2aa649cec6e6/artifacts
+end_time: 1675185908232
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 42b3abccbf3c45b0befc2aa649cec6e6
+run_name: puzzled-loon-881
+run_uuid: 42b3abccbf3c45b0befc2aa649cec6e6
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675185896816
+status: 4
+tags: []
+user_id: vscode

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/a1a35749bea2414d94c7c44e09c3b5b2/artifacts
+end_time: 1675186771944
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a1a35749bea2414d94c7c44e09c3b5b2
+run_name: upset-flea-492
+run_uuid: a1a35749bea2414d94c7c44e09c3b5b2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675186770946
+status: 4
+tags: []
+user_id: vscode

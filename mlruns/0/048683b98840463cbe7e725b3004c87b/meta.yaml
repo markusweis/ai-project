@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/048683b98840463cbe7e725b3004c87b/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 048683b98840463cbe7e725b3004c87b
+run_name: selective-shoat-927
+run_uuid: 048683b98840463cbe7e725b3004c87b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675185593719
+status: 1
+tags: []
+user_id: vscode
