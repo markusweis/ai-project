@@ -16,11 +16,14 @@ from tqdm import tqdm
 from graph import Graph
 from node import Node
 from part import Part
-from gnn_stack import GNNStack
-from link_predictor import LinkPredictor
+from prediction_models.gnn.link_predictor import LinkPredictor
 from prediction_models.base_prediction_model import BasePredictionModel
-from constants import MAX_NUMBER_OF_PARTS_PER_GRAPH, EMBDEDDING_DIMS, DROPOUT, \
-     HIDDEN_DIMS, NUM_LAYERS, LR, WD
+from prediction_models.gnn.constants import *
+from prediction_models.gnn.dataset import CustomGraphDataset
+from torch_geometric.utils import negative_sampling
+
+from prediction_models.gnn.gnn_stack import GNNStack
+
 
 
 # Get cpu or gpu device for training.
@@ -33,12 +36,13 @@ class GNNPredictionModel(BasePredictionModel):
 
     def __init__(self):
         self._embeddings_model: GNNStack = GNNStack(
-            EMBDEDDING_DIMS,
+            2,  # F
             HIDDEN_DIMS,
             HIDDEN_DIMS, 
-            NUM_LAYERS
+            NUM_LAYERS,
+            DROPOUT
         ).to(device)
-        self._link_predictor: LinkPredictor(
+        self._link_predictor: LinkPredictor = LinkPredictor(
             HIDDEN_DIMS,  # TODO: seperate constants; don't have to be same
             HIDDEN_DIMS,  
             NUM_LAYERS,
@@ -103,20 +107,21 @@ class GNNPredictionModel(BasePredictionModel):
         :param train_graphs: List of graphs to train with        
         """
         new_instance = cls()
-        print("Loading training data...")
         train_dataset = CustomGraphDataset(train_set)
         train_dataloader = DataLoader(
-            train_dataset, batch_size=64, shuffle=True)
+            train_dataset, batch_size=1, shuffle=True)
 
         val_dataset = CustomGraphDataset(val_set)
-        val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=False)
+        val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
         print("Starting training...")
         epochs = 8
         mlflow.log_param("epochs", epochs)
         for t in range(epochs):
             print(f"Epoch {t+1}")
-            new_instance._train(dataloader=train_dataloader)
+            new_instance._train(train_dataloader,
+                 new_instance._embeddings_model, new_instance._link_predictor,
+                 new_instance._embeddings.weight, new_instance._optimizer)
 
             # loss on validation set
             loss = 0
@@ -139,40 +144,45 @@ class GNNPredictionModel(BasePredictionModel):
         """
         torch.save(self._model.state_dict(), file_path)
 
-    def _train(self, model, link_predictor, emb, edge_index, pos_train_edge, batch_size, optimizer):
+    def _train(self, dataloader: CustomGraphDataset, emb_model: GNNStack, link_predictor, emb, optimizer):
         """
-        TODO: This should be done for every graph seperatly 
-        Runs offline training for model, link_predictor and node embeddings given the message
+        Trains for a single epoch. 
+        Runs offline training for model, link_predictor and node embeddings
         edges and supervision edges.
-        :param model: Torch Graph model used for updating node embeddings based on message passing
+        :param dataloader: The custom dataloader for the test set. 
+        :param emb_model: Torch Graph model used for updating node embeddings based on message passing
         :param link_predictor: Torch model used for predicting whether edge exists or not
         :param emb: (N, d) Initial node embeddings for all N nodes in graph
-        :param edge_index: (2, E) Edge index for all edges in the graph
-        :param pos_train_edge: (PE, 2) Positive edges used for training supervision loss
-        :param batch_size: Number of positive (and negative) supervision edges to sample per batch
         :param optimizer: Torch Optimizer to update model parameters
         :return: Average supervision loss over all positive (and correspondingly sampled negative) edges
         """
 
-        self._model.train()
+        self._embeddings_model.train()
         self._link_predictor.train()
 
         train_losses = []
 
-        for edge_id in DataLoader(range(pos_train_edge.shape[0]), batch_size, shuffle=True):
+        for parts_list, edge_index in dataloader:
             optimizer.zero_grad()
+            
+             # batch size of 1 makes 3 dims but emb_model expects 2
+            parts_list = parts_list[0]
+            edge_index = edge_index[0]
 
             # Run message passing on the inital node embeddings to get updated embeddings
-            node_emb = model(emb, edge_index)  # (N, d)
+            node_emb = emb_model(parts_list, edge_index)  # (N, d)
 
             # Predict the class probabilities on the batch of positive edges using link_predictor
-            pos_edge = pos_train_edge[edge_id].T  # (2, B)
-            pos_pred = link_predictor(node_emb[pos_edge[0]], node_emb[pos_edge[1]])  # (B, )
+            pos_edge = edge_index  # (2, E)
+            pos_pred = link_predictor(node_emb[pos_edge[0]], node_emb[pos_edge[1]])  # (E, )
 
-            # Sample negative edges (same as number of positive edges) and predict class probabilities
+            # Sample negative edges (same as number of positive edges (if possible)) and predict class probabilities
+            # num_neg_samples= None -> same number as E 
             neg_edge = negative_sampling(edge_index, num_nodes=emb.shape[0],
-                                        num_neg_samples=edge_id.shape[0], method='dense')  # (Ne,2)
-            neg_pred = link_predictor(node_emb[neg_edge[0]], node_emb[neg_edge[1]])  # (Ne,)
+                                        num_neg_samples=None, method='dense')  # (2, E)
+
+                                                                                
+            neg_pred = link_predictor(node_emb[neg_edge[0]], node_emb[neg_edge[1]])  # (E, )
 
             # Compute the corresponding negative log likelihood loss on the positive and negative edges
             loss = -torch.log(pos_pred + 1e-15).mean() - torch.log(1 - neg_pred + 1e-15).mean()
@@ -180,6 +190,7 @@ class GNNPredictionModel(BasePredictionModel):
             optimizer.step()
 
             train_losses.append(loss.item())
+            mlflow.log_metric("train_loss",str(loss.item()))
             # print(loss.item())
 
         return sum(train_losses) / len(train_losses)

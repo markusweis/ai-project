@@ -7,6 +7,8 @@ from torch.utils.data import Dataset
 from graph import Graph
 from torch_geometric.data import Data
 
+from prediction_models.gnn.constants import MAX_NUMBER_OF_PARTS_PER_GRAPH
+
 
 
 
@@ -29,12 +31,15 @@ class CustomGraphDataset(Dataset):
         return len(self.graphs)
 
     def __getitem__(self, idx):
-        parts_list_tensor = [(part.get_part_id(), part.get_family_id()) for part in self.parts_lists[idx]]
+        parts_tensor = torch.tensor([(part.get_part_id(), part.get_family_id()) for part in self.parts_lists[idx]])
         adj_matr_tensor = torch.tensor(self.graphs[idx].get_adjacency_matrix(part_order=self.parts_lists[idx]), dtype=torch.float32)
-        edge_index = adj_matr_tensor.nonzero().t().contiguous()
+        edge_index = adj_matr_tensor.nonzero().t().contiguous().long()
         
-        # if torch.geometric functions are every necessary, it is possible to convert like this: 
-        # data = Data(x=parts_list_tensor, edge_index=edge_index)
-
+        
+         # Padding to achieve the same size for each input
+        missing_node_count = MAX_NUMBER_OF_PARTS_PER_GRAPH - len(self.parts_lists[idx])
+        if missing_node_count > 0:
+            parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", -1).long()
     
-        return parts_list_tensor, edge_index
+        
+        return parts_tensor, edge_index
