@@ -7,17 +7,15 @@ urllib3
 
 # Pytorch (on CPU):
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch 
-torchvision 
-torchaudio
+torch==1.13.1+cpu
+torchvision==0.14.1+cpu
+torchaudio==0.13.1+cpu
+
 
 tqdm 
-mlflow 
+mlflow
 
-#torch geometric
---extra-index-url https://data.pyg.org/whl/torch-1.13.0+cpu.html
-torch-scatter
-torch-sparse
-torch-cluster
-torch-spline-conv
-torch-geometric 
+# Torch geometric is also required, but does not work to be installed directly within this file.
+# Check the instructions at https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html to manually install it:
+# pip install pyg-lib torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
+# The devcontainer-setup does this automatically.

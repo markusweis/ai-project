@@ -12,7 +12,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip3 install --user -r requirements.txt && printf '\n\n\n\n\nTo activate code analysis for loaded packages, execute:\n\n\t > Developer: Reload Window\n\n\n\n\n'",
+	"postCreateCommand": "pip3 install --user -r requirements.txt && pip install pyg-lib torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html && printf '\n\n\n\n\nTo activate code analysis for loaded packages, execute:\n\n\t > Developer: Reload Window\n\n\n\n\n'",
 
 	// Configure tool-specific properties.
 	// "customizations": {},
