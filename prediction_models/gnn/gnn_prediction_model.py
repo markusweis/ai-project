@@ -78,15 +78,27 @@ class GNNPredictionModel(BasePredictionModel):
             parts_tensor = pad(
                 parts_tensor, (0, 0, 0, missing_node_count), "constant", -1)
 
-        self._model.eval()
-        with torch.no_grad():
-            X = parts_tensor.to(device)
-            pred = self._model(X)
+        self._embeddings_model.eval()
+        self._link_predictor.eval()
 
-        pred_thresh = torch.where(pred > 0, 1, 0)
-        graph = Graph.from_adjacency_matrix(
-            part_list=parts_list, adjacency_matrix=pred_thresh)
+        # TODO: implement
 
+        # with torch.no_grad():
+        #     X = parts_tensor.to(device)
+        #     pred = self._model(X)
+
+        # pred_thresh = torch.where(pred > 0, 1, 0)
+        # graph = Graph.from_adjacency_matrix(
+        #     part_list=parts_list, adjacency_matrix=pred_thresh)
+
+        # return graph
+
+        # Pseudo output:
+        graph = Graph()
+        parts_list = list(parts) 
+        for i in range(len(parts_list) - 1):
+            graph.add_undirected_edge(parts_list[i], parts_list[i+1])
+    
         return graph
 
     @classmethod
@@ -119,21 +131,24 @@ class GNNPredictionModel(BasePredictionModel):
         mlflow.log_param("epochs", epochs)
         for t in range(epochs):
             print(f"Epoch {t+1}")
-            new_instance._train(train_dataloader,
-                 new_instance._embeddings_model, new_instance._link_predictor,
-                 new_instance._embeddings.weight, new_instance._optimizer)
+            epoch_loss = new_instance._train(train_dataloader)
+
+            print(f"Epoch {t+1}: Mean loss: {epoch_loss}")
+
+            new_instance._embeddings_model.eval()
+            new_instance._link_predictor.eval()
 
             # loss on validation set
             loss = 0
             for X, y in val_dataloader:
                 X, y = X.to(device), y.to(device)
-                pred = new_instance._model(X)
-                loss += new_instance._loss_fn(pred, y)
+                curr_loss = new_instance._process_single_instance(parts_list=X, edge_index=y)
+                loss += curr_loss
             # is the normlaization correct?
             normalized_val_loss = loss / (len(val_set) / 64)
-            mlflow.log_metric("val loss", normalized_val_loss,
+            mlflow.log_metric("val_loss", normalized_val_loss,
                               (t + 1) * len(train_set))
-            print(f"validation loss: {normalized_val_loss}")
+            print(f"Validation loss: {normalized_val_loss}")
         return new_instance
 
     def store_model(self, file_path: str):
@@ -144,7 +159,31 @@ class GNNPredictionModel(BasePredictionModel):
         """
         torch.save(self._model.state_dict(), file_path)
 
-    def _train(self, dataloader: CustomGraphDataset, emb_model: GNNStack, link_predictor, emb, optimizer):
+    def _process_single_instance(self, parts_list, edge_index):
+        # batch size of 1 makes 3 dims but emb_model expects 2
+        parts_list = parts_list[0]
+        edge_index = edge_index[0]
+
+        # Run message passing on the inital node embeddings to get updated embeddings
+        node_emb = self._embeddings_model(parts_list, edge_index)  # (N, d)
+
+        # Predict the class probabilities on the batch of positive edges using link_predictor
+        pos_edge = edge_index  # (2, E)
+        pos_pred = self._link_predictor(node_emb[pos_edge[0]], node_emb[pos_edge[1]])  # (E, )
+
+        # Sample negative edges (same as number of positive edges (if possible)) and predict class probabilities
+        # num_neg_samples= None -> same number as E 
+        neg_edge = negative_sampling(edge_index, num_nodes=self._embeddings.weight.shape[0],
+                                    num_neg_samples=None, method='dense')  # (2, E)
+
+                                                                            
+        neg_pred = self._link_predictor(node_emb[neg_edge[0]], node_emb[neg_edge[1]])  # (E, )
+
+        # Compute the corresponding negative log likelihood loss on the positive and negative edges
+        return -torch.log(pos_pred + 1e-15).mean() - torch.log(1 - neg_pred + 1e-15).mean()
+        
+
+    def _train(self, dataloader: CustomGraphDataset):
         """
         Trains for a single epoch. 
         Runs offline training for model, link_predictor and node embeddings
@@ -161,36 +200,21 @@ class GNNPredictionModel(BasePredictionModel):
         self._link_predictor.train()
 
         train_losses = []
+        
+        progress_bar = tqdm(dataloader) # Wraps progress bar around an interable 
 
         for parts_list, edge_index in dataloader:
-            optimizer.zero_grad()
-            
-             # batch size of 1 makes 3 dims but emb_model expects 2
-            parts_list = parts_list[0]
-            edge_index = edge_index[0]
+            self._optimizer.zero_grad()
 
-            # Run message passing on the inital node embeddings to get updated embeddings
-            node_emb = emb_model(parts_list, edge_index)  # (N, d)
-
-            # Predict the class probabilities on the batch of positive edges using link_predictor
-            pos_edge = edge_index  # (2, E)
-            pos_pred = link_predictor(node_emb[pos_edge[0]], node_emb[pos_edge[1]])  # (E, )
-
-            # Sample negative edges (same as number of positive edges (if possible)) and predict class probabilities
-            # num_neg_samples= None -> same number as E 
-            neg_edge = negative_sampling(edge_index, num_nodes=emb.shape[0],
-                                        num_neg_samples=None, method='dense')  # (2, E)
-
-                                                                                
-            neg_pred = link_predictor(node_emb[neg_edge[0]], node_emb[neg_edge[1]])  # (E, )
-
-            # Compute the corresponding negative log likelihood loss on the positive and negative edges
-            loss = -torch.log(pos_pred + 1e-15).mean() - torch.log(1 - neg_pred + 1e-15).mean()
+            loss = self._process_single_instance(parts_list=parts_list, edge_index=edge_index)
             loss.backward()
-            optimizer.step()
+            self._optimizer.step()
 
             train_losses.append(loss.item())
             mlflow.log_metric("train_loss",str(loss.item()))
             # print(loss.item())
+
+            progress_bar.set_description(str(loss.item()))
+            progress_bar.update()
 
         return sum(train_losses) / len(train_losses)

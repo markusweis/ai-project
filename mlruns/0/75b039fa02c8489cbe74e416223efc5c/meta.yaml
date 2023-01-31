@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/75b039fa02c8489cbe74e416223efc5c/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 75b039fa02c8489cbe74e416223efc5c
+run_name: selective-fly-236
+run_uuid: 75b039fa02c8489cbe74e416223efc5c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675193935061
+status: 1
+tags: []
+user_id: vscode

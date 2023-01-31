@@ -159,8 +159,8 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
                 pred = new_instance._model(X)
                 loss += new_instance._loss_fn(pred, y)
             normalized_val_loss = loss / (len(val_set) / 64) # is the normlaization correct? 
-            mlflow.log_metric("val loss", normalized_val_loss, (t + 1) * len(train_set) )
-            print(f"validation loss: {normalized_val_loss}")    
+            mlflow.log_metric("val_loss", normalized_val_loss, (t + 1) * len(train_set) )
+            print(f"Validation loss: {normalized_val_loss}")    
         return new_instance
 
 

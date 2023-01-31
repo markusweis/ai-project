@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/dd69ca3fef6046429def6e7452017be5/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: dd69ca3fef6046429def6e7452017be5
+run_name: capable-carp-795
+run_uuid: dd69ca3fef6046429def6e7452017be5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675193912899
+status: 1
+tags: []
+user_id: vscode

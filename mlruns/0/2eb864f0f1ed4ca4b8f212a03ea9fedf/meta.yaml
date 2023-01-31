@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/2eb864f0f1ed4ca4b8f212a03ea9fedf/artifacts
+end_time: 1675195770338
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 2eb864f0f1ed4ca4b8f212a03ea9fedf
+run_name: monumental-cod-623
+run_uuid: 2eb864f0f1ed4ca4b8f212a03ea9fedf
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675195025284
+status: 4
+tags: []
+user_id: vscode
