@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/0bec9b0089ee4807ab5999396de5fe67/artifacts
+end_time: 1675165020176
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 0bec9b0089ee4807ab5999396de5fe67
+run_name: magnificent-kit-279
+run_uuid: 0bec9b0089ee4807ab5999396de5fe67
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675164962592
+status: 4
+tags: []
+user_id: Markus

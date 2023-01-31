@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/bf5f65b3e5554396abd0fa1122ed08e1/artifacts
+end_time: 1675174399883
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: bf5f65b3e5554396abd0fa1122ed08e1
+run_name: salty-shark-519
+run_uuid: bf5f65b3e5554396abd0fa1122ed08e1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675174362889
+status: 4
+tags: []
+user_id: Markus

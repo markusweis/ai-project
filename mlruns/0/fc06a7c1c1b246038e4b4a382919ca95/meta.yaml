@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/fc06a7c1c1b246038e4b4a382919ca95/artifacts
+end_time: 1675163737793
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fc06a7c1c1b246038e4b4a382919ca95
+run_name: bemused-wolf-362
+run_uuid: fc06a7c1c1b246038e4b4a382919ca95
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675163737695
+status: 4
+tags: []
+user_id: Markus

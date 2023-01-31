@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/4b468d93148145a187be2635e18ed29c/artifacts
+end_time: 1675164309276
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4b468d93148145a187be2635e18ed29c
+run_name: charming-roo-795
+run_uuid: 4b468d93148145a187be2635e18ed29c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675164243985
+status: 4
+tags: []
+user_id: Markus

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/359676e586a44ccc9217177cfc367a82/artifacts
+end_time: 1675163791496
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 359676e586a44ccc9217177cfc367a82
+run_name: overjoyed-toad-692
+run_uuid: 359676e586a44ccc9217177cfc367a82
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675163791281
+status: 4
+tags: []
+user_id: Markus
