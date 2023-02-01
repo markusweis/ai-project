@@ -14,63 +14,16 @@ from tqdm import tqdm
 from graph import Graph
 from node import Node
 from part import Part
+from prediction_models.base_neural_network.base_graph_dataset import BaseGraphDataset
+from prediction_models.base_neural_network.base_neural_network_model_definition import BaseNeuralNetworkModelDefinition
 from prediction_models.base_prediction_model import BasePredictionModel
 import mlflow
+import meta_parameters
 
-MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
 
 # Get cpu or gpu device for training.
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device")
-
-
-class NeuralNetwork(nn.Module):
-    # TODO: maybe add as second base class to pred model
-    def __init__(self):
-        super().__init__()
-        self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(30*2, 512),
-            nn.ReLU(),
-            nn.Linear(512, 32),
-            nn.ReLU(),
-            nn.Linear(32, 256),
-            nn.ReLU(),
-            nn.Linear(256, 30*30),
-            nn.InstanceNorm1d(30*30)
-        )
-        self.unflatten = nn.Unflatten(1, (30, 30))
-
-    def forward(self, x):
-        x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        y = self.unflatten(logits)
-        return y
-
-class CustomGraphDataset(Dataset):
-    def __init__(self, graphs: List[Graph]):
-        self.graphs = graphs
-        self.parts_lists = [list(graph.get_parts()) for graph in self.graphs]
-        # Sort the parts to reduce possible combinations
-        for parts_list in self.parts_lists:
-            parts_list.sort()
-
-    def __len__(self):
-        return len(self.graphs)
-
-    def __getitem__(self, idx):
-    
-        parts_tensor = torch.tensor([[part.get_part_id(), part.get_family_id()] for part in self.parts_lists[idx]], dtype=torch.float32)
-        adj_matr_tensor = torch.tensor(self.graphs[idx].get_adjacency_matrix(part_order=self.parts_lists[idx]), dtype=torch.float32)
-
-        # Padding to achieve the same size for each input
-        missing_node_count = MAX_NUMBER_OF_PARTS_PER_GRAPH - len(self.parts_lists[idx])
-        if missing_node_count > 0:
-            parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", -1)
-            adj_matr_tensor = pad(adj_matr_tensor, (0, missing_node_count, 0, missing_node_count), "constant", -1)
-
-        return parts_tensor, adj_matr_tensor
-
 
 
 class NeuralNetworkPredictionModel(BasePredictionModel):
@@ -78,11 +31,22 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
     This class is a blueprint for your prediction model(s) serving as base class.
     """
     def __init__(self):
-        self._model: NeuralNetwork = NeuralNetwork().to(device)
+        self._model: BaseNeuralNetworkModelDefinition = BaseNeuralNetworkModelDefinition().to(device)
         self._loss_fn = nn.SmoothL1Loss()
         self._optimizer = torch.optim.SGD(self._model.parameters(), lr=0.05)
         print("Using model:")
         print(self._model)
+
+    def get_meta_params(self) -> dict:
+        """
+        :return: Dict containing all used meta parameters
+        """
+        return {
+            "MAX_NUMBER_OF_PARTS_PER_GRAPH": meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH,
+            "NUM_HIDDEN_LAYERS": meta_parameters.NUM_HIDDEN_LAYERS,
+            "HIDDEN_LAYERS_SIZE": meta_parameters.HIDDEN_LAYERS_SIZE,
+            "LEARNING_RATE": meta_parameters.LEARNING_RATE
+        }
 
     def predict_graph(self, parts: Set[Part]) -> Graph:
         """
@@ -138,10 +102,10 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         """
         new_instance = cls()
         print("Loading training data...")
-        train_dataset = CustomGraphDataset(train_set)
+        train_dataset = BaseGraphDataset(train_set)
         train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
-        val_dataset = CustomGraphDataset(val_set)
+        val_dataset = BaseGraphDataset(val_set)
         val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=False)
         
         

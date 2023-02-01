@@ -1,7 +1,7 @@
 from enum import Enum
 from prediction_models.gnn.gnn_prediction_model import GNNPredictionModel
 
-from prediction_models.neural_network_prediction_model import NeuralNetworkPredictionModel
+from prediction_models.base_neural_network.neural_network_prediction_model import NeuralNetworkPredictionModel
 from prediction_models.straight_line_pseudo_prediction_model import StraightLinePseudoPredictionModel
 
 

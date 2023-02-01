@@ -8,13 +8,18 @@ import mlflow
 from graph import Graph
 from part import Part
 from prediction_models.base_prediction_model import BasePredictionModel
-from prediction_models.neural_network_prediction_model import NeuralNetworkPredictionModel
+from prediction_models.base_neural_network.neural_network_prediction_model import NeuralNetworkPredictionModel
 from prediction_models.prediction_models_enum import PredictionModels, get_model_class
 from evaluation import eval_model_on_train_set
 
-SELECTED_MODEL_TYPE = PredictionModels.GGN.value
-SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN.pth"
+# SELECTED_MODEL_TYPE = PredictionModels.GGN.value
+# SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN.pth"
 
+SELECTED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
+SELECTED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
+
+# SELECTED_MODEL_TYPE = PredictionModels.STRAIGHT_LINE_PSEUDO_PREDICTION_MODEL.value
+# SELECTED_MODEL_PATH = "prediction_models/model_instances/PSEUDO_MODEL.pth"
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Train a selected model (Select via parameter or constant):
@@ -47,6 +52,6 @@ if __name__ == '__main__':
         new_model_instance = model_class.train_new_instance(
                 train_set=train_set, val_set=val_set)
         score = eval_model_on_train_set(new_model_instance) # TODO: Why eval on train? 
-        mlflow.log_metric("edge acc", score)
+        mlflow.log_metric("edge_acc", score)
 
         new_model_instance.store_model(model_file_path)

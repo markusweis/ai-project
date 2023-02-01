@@ -13,6 +13,12 @@ class StraightLinePseudoPredictionModel(BasePredictionModel):
     Pseudo prediction model that forms a straight line of all given nodes and returns it.
     """
     
+    def get_meta_params(self) -> dict:
+        """
+        :return: Dict containing all used meta parameters
+        """
+        return {}
+    
     def predict_graph(self, parts: Set[Part]) -> Graph:
         """
         Returns a graph containing all given parts. This method is called within the method `evaluate`.

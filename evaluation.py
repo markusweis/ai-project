@@ -7,14 +7,16 @@ import sys
 from graph import Graph
 from part import Part
 from prediction_models.base_prediction_model import BasePredictionModel
-from prediction_models.neural_network_prediction_model import NeuralNetworkPredictionModel
+from prediction_models.base_neural_network.neural_network_prediction_model import NeuralNetworkPredictionModel
 from prediction_models.prediction_models_enum import PredictionModels, get_model_class
 
 # LOADED_MODEL_TYPE = PredictionModels.STRAIGHT_LINE_PSEUDO_PREDICTION_MODEL.value
 
 
 LOADED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
-LOADED_MODEL_PATH = "prediction_models/model_instances/test_model.pth"
+# LOADED_MODEL_PATH = "prediction_models/model_instances/test_model.pth"
+LOADED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
+
 
 
 def load_model(file_path: str, model_type: str = LOADED_MODEL_TYPE) -> BasePredictionModel:
