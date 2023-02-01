@@ -8,6 +8,15 @@ class BasePredictionModel(ABC):
     This class is a blueprint for your prediction model(s) serving as base class.
     """
 
+    @classmethod
+    @abstractmethod
+    def get_name(self) -> str:
+        """
+        :return: Name of the model (used as model and run name)
+        """
+        pass
+    
+    @classmethod
     @abstractmethod
     def get_meta_params(self) -> dict:
         """

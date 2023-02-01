@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/43ba99e9f3724d36b805b403ebbf3e48/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 43ba99e9f3724d36b805b403ebbf3e48
+run_name: dapper-sheep-46
+run_uuid: 43ba99e9f3724d36b805b403ebbf3e48
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675278933405
+status: 1
+tags: []
+user_id: vscode

@@ -5,8 +5,7 @@ from torch.nn.functional import pad
 
 from graph import Graph
 from part import Part
-
-MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+from prediction_models.base_neural_network import meta_parameters
 
 class BaseGraphDataset(Dataset):
     def __init__(self, graphs: List[Graph]):
@@ -25,7 +24,7 @@ class BaseGraphDataset(Dataset):
         adj_matr_tensor = torch.tensor(self.graphs[idx].get_adjacency_matrix(part_order=self.parts_lists[idx]), dtype=torch.float32)
 
         # Padding to achieve the same size for each input
-        missing_node_count = MAX_NUMBER_OF_PARTS_PER_GRAPH - len(self.parts_lists[idx])
+        missing_node_count = meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH - len(self.parts_lists[idx])
         if missing_node_count > 0:
             parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", -1)
             adj_matr_tensor = pad(adj_matr_tensor, (0, missing_node_count, 0, missing_node_count), "constant", -1)

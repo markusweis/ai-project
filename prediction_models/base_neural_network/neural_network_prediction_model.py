@@ -18,7 +18,7 @@ from prediction_models.base_neural_network.base_graph_dataset import BaseGraphDa
 from prediction_models.base_neural_network.base_neural_network_model_definition import BaseNeuralNetworkModelDefinition
 from prediction_models.base_prediction_model import BasePredictionModel
 import mlflow
-import meta_parameters
+from prediction_models.base_neural_network import meta_parameters
 
 
 # Get cpu or gpu device for training.
@@ -31,12 +31,20 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
     This class is a blueprint for your prediction model(s) serving as base class.
     """
     def __init__(self):
-        self._model: BaseNeuralNetworkModelDefinition = BaseNeuralNetworkModelDefinition().to(device)
+        self.model: BaseNeuralNetworkModelDefinition = BaseNeuralNetworkModelDefinition().to(device)
         self._loss_fn = nn.SmoothL1Loss()
-        self._optimizer = torch.optim.SGD(self._model.parameters(), lr=0.05)
+        self._optimizer = torch.optim.SGD(self.model.parameters(), lr=meta_parameters.LEARNING_RATE)
         print("Using model:")
-        print(self._model)
+        print(self.model)
 
+    @classmethod
+    def get_name(self) -> str:
+        """
+        :return: Name of the model (used as model and run name)
+        """
+        return "base_neural_network_model"
+
+    @classmethod
     def get_meta_params(self) -> dict:
         """
         :return: Dict containing all used meta parameters
@@ -61,15 +69,15 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         parts_tensor = torch.tensor([[[part.get_part_id(), part.get_family_id()] for part in parts_list]], dtype=torch.float32)
 
         # Padding to achieve the same size for each input
-        missing_node_count = MAX_NUMBER_OF_PARTS_PER_GRAPH - len(parts_list)
+        missing_node_count = meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH - len(parts_list)
         if missing_node_count > 0:
             parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", -1)
 
 
-        self._model.eval()
+        self.model.eval()
         with torch.no_grad():
             X = parts_tensor.to(device)
-            pred = self._model(X)
+            pred = self.model(X)
 
         
         pred_thresh = torch.where(pred > 0, 1, 0)
@@ -91,7 +99,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         :return: the loaded prediction model
         """
         loaded_instance = cls()
-        loaded_instance._model.state_dict(torch.load(file_path))
+        loaded_instance.model.state_dict(torch.load(file_path))
         return loaded_instance
     
     @classmethod
@@ -110,9 +118,8 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         
         
         print("Starting training...")
-        epochs = 8
-        mlflow.log_param("epochs", epochs)
-        for t in range(epochs):
+        mlflow.log_param("epochs", meta_parameters.LEARNING_EPOCHS)
+        for t in range(meta_parameters.LEARNING_EPOCHS):
             print(f"Epoch {t+1}")
             new_instance._train(dataloader=train_dataloader)
 
@@ -120,7 +127,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             loss = 0
             for X, y in val_dataloader:
                 X, y = X.to(device), y.to(device)
-                pred = new_instance._model(X)
+                pred = new_instance.model(X)
                 loss += new_instance._loss_fn(pred, y)
             normalized_val_loss = loss / (len(val_set) / 64) # is the normlaization correct? 
             mlflow.log_metric("val_loss", normalized_val_loss, (t + 1) * len(train_set) )
@@ -134,17 +141,17 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         (needed for evaluating your model on the test set).
         :param file_path: path to file
         """
-        torch.save(self._model.state_dict(), file_path)
+        torch.save(self.model.state_dict(), file_path)
 
     def _train(self, dataloader):
         size = len(dataloader.dataset)
-        self._model.train()
+        self.model.train()
         progress_bar = tqdm(dataloader) # Wraps progress bar around an interable 
         for (X, y) in progress_bar:
             X, y = X.to(device), y.to(device)
 
             # Compute prediction error
-            pred = self._model(X)
+            pred = self.model(X)
             loss = self._loss_fn(pred, y)
             mlflow.log_metric("train_loss", loss)
 
