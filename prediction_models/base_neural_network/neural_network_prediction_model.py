@@ -28,7 +28,7 @@ print(f"Using {device} device")
 
 class NeuralNetworkPredictionModel(BasePredictionModel):
     """
-    This class is a blueprint for your prediction model(s) serving as base class.
+    Fully connected neural network predicting adjacency matrizes
     """
     def __init__(self):
         self.model: BaseNeuralNetworkModelDefinition = BaseNeuralNetworkModelDefinition().to(device)
@@ -83,12 +83,6 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         pred_thresh = torch.where(pred > 0, 1, 0)
         graph = Graph.from_adjacency_matrix(part_list=parts_list, adjacency_matrix=pred_thresh)
 
-        # Pseudo output:
-        # graph = Graph()
-        # parts_list = list(parts) 
-        # for i in range(len(parts_list) - 1):
-        #     graph.add_undirected_edge(parts_list[i], parts_list[i+1])
-    
         return graph
 
     @classmethod
@@ -101,6 +95,16 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         loaded_instance = cls()
         loaded_instance.model.state_dict(torch.load(file_path))
         return loaded_instance
+
+    def log_pytorch_models_to_mlflow(self):
+        """
+        Logs the model or models to mlflow
+        """
+        # Log the model to mlflow
+        mlflow.pytorch.log_model(
+            self.model,
+            self.get_name()
+        )
     
     @classmethod
     def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray):

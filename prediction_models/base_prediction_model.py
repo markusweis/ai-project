@@ -42,6 +42,13 @@ class BasePredictionModel(ABC):
         :return: the loaded prediction model
         """
         pass
+
+    @abstractmethod
+    def log_pytorch_models_to_mlflow(self):
+        """
+        Logs the model or models to mlflow
+        """
+        pass
     
     @classmethod
     @abstractmethod

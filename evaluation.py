@@ -1,14 +1,27 @@
+"""
+Provides edge accuracy evaluations. 
+
+Can be used on subsets of the data with evaluate_edge_accuracy(model, graphs: np.array)
+
+If this file is run as main, the score on the test-dataset is evaluated.
+"""
+
+
 from itertools import permutations
 import numpy as np
 import pickle
 from typing import Dict, List, Set, Tuple
 import sys
+from dataset_retriever import DatasetRetriever
+from tqdm import tqdm
 
+import mlflow
 from graph import Graph
 from part import Part
 from prediction_models.base_prediction_model import BasePredictionModel
 from prediction_models.base_neural_network.neural_network_prediction_model import NeuralNetworkPredictionModel
 from prediction_models.prediction_models_enum import PredictionModels, get_model_class
+
 
 # LOADED_MODEL_TYPE = PredictionModels.STRAIGHT_LINE_PSEUDO_PREDICTION_MODEL.value
 
@@ -16,8 +29,6 @@ from prediction_models.prediction_models_enum import PredictionModels, get_model
 LOADED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
 # LOADED_MODEL_PATH = "prediction_models/model_instances/test_model.pth"
 LOADED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
-
-
 
 def load_model(file_path: str, model_type: str = LOADED_MODEL_TYPE) -> BasePredictionModel:
     """
@@ -31,6 +42,8 @@ def load_model(file_path: str, model_type: str = LOADED_MODEL_TYPE) -> BasePredi
 
 def evaluate(model: BasePredictionModel, data_set: List[Tuple[Set[Part], Graph]]) -> float:
     """
+    Calculates the edge accuracy on the given graphs subset.
+
     Evaluates a given prediction model on a given data set.
     :param model: prediction model
     :param data_set: data set
@@ -39,8 +52,8 @@ def evaluate(model: BasePredictionModel, data_set: List[Tuple[Set[Part], Graph]]
     sum_correct_edges = 0
     edges_counter = 0
 
-    for input_parts, target_graph in data_set:
-        print("Testing instance..")
+    progress_bar = tqdm(data_set) # Wraps progress bar around an interable 
+    for input_parts, target_graph in progress_bar:
         predicted_graph = model.predict_graph(input_parts)
 
         edges_counter += len(input_parts) * len(input_parts)
@@ -119,22 +132,25 @@ def __generate_part_list_permutations(parts: Set[Part]) -> List[Tuple[Part]]:
 # ---------------------------------------------------------------------------------------------------------------------
 # Evaluation (Select via parameter or constant)
 
-def eval_model_on_train_set(model) -> float:
-    # Load train data
-    with open('data/graphs.dat', 'rb') as file:
-        train_graphs: List[Graph] = pickle.load(file)
-#    For illustration, compute eval score on train data
-    instances = [(graph.get_parts(), graph) for graph in train_graphs[:100]]
-    # TODO: Extract training / evaluation / test data separation to a separate file and make sure it is unbiased
+def evaluate_edge_accuracy(model, graphs: np.array) -> float:
+    instances = [(graph.get_parts(), graph) for graph in graphs]
     return evaluate(model, instances)
 
-
 if __name__ == '__main__':
+    """
+    Loads the model at LOADED_MODEL_PATH / argument 2 of type LOADED_MODEL_TYPE / argument 1.
+    Calculates the edge accuracy for the test dataset.
+    """
+    # Load data
+    dataset_retriever = DatasetRetriever.instance()
+
     # Load the model
+    print("Loading the model...")
     model_type = LOADED_MODEL_TYPE if len(sys.argv) < 2 else sys.argv[1]
     model_file_path = LOADED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
     prediction_model: BasePredictionModel = load_model(
         model_file_path, model_type=model_type)
 
-    eval_score = eval_model_on_train_set(prediction_model)
-    print(f"eval_score: {eval_score}")
+    print("Evaluating the model...")
+    eval_score = evaluate_edge_accuracy(prediction_model, dataset_retriever.get_test_graphs())
+    print(f"Evaluation edge accuracy score on the test dataset: {eval_score}")
