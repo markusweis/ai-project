@@ -77,7 +77,7 @@ Main finding:
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/259e1b9a212f4684a7ef26891bfc59a2)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/da8e3f09606a26abfec5822284ed752af397e51a)
 
 **Edge Accuracy – Evaluation dataset:** 64.75
 
@@ -88,14 +88,14 @@ Main finding:
 - LEARNING_RATE = 0.05
 - LEARNING_EPOCHS = 5
 - UNUSED_NODES_PADDING_VALUE = -1
-- ADJACENCY_MATRIX_HIT_THRESHOLD = 0.8
+- ADJACENCY_MATRIX_HIT_THRESHOLD = 1.0
 
 #### 1.1.4
-A naive approach to fix the problem of 1.1.1 predicting nearly only fully connected graphs: Adjusting the threshold: Third try: Larger increase from 1.0 to 1.5. Expectation: worse than for 1.0.
+A naive approach to fix the problem of 1.1.1 predicting nearly only fully connected graphs: Adjusting the threshold: Third try: Larger increase from 1.0 to 1.5. Expectation: worse than for 1.0. because too few edges are predicted.
 
-Main finding: 
+Main finding: Many graphs without edges -> Too large threshold. But higher edge accuracy score of 79.64
 
-[MLflow experiment]()
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/999e81a8453b4c73b1dc325157905224)
 
 [git commit]()
 
@@ -108,7 +108,7 @@ Main finding:
 - LEARNING_RATE = 0.05
 - LEARNING_EPOCHS = 5
 - UNUSED_NODES_PADDING_VALUE = -1
-- ADJACENCY_MATRIX_HIT_THRESHOLD = 0.8
+- ADJACENCY_MATRIX_HIT_THRESHOLD = 1.5
 
 #### 1.1.5
 A naive approach to fix the problem of 1.1.1 predicting nearly only fully connected graphs: Adjusting the threshold: First try: 1.5 -> 0.8
