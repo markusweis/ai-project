@@ -274,7 +274,7 @@ class Graph:
             graph.add_node_without_edge(part)
         
         for row in range(len(part_list)):
-            for col in range(row, len(part_list)):
+            for col in range(len(part_list)):
                 if adjacency_matrix[0][row][col] == 1:
                     graph.add_undirected_edge(part_list[row], part_list[col])
         

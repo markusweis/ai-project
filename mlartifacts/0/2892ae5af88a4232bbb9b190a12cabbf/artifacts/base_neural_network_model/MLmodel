@@ -1,0 +1,18 @@
+artifact_path: base_neural_network_model
+flavors:
+  python_function:
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pytorch
+    pickle_module_name: mlflow.pytorch.pickle_module
+    python_version: 3.8.16
+  pytorch:
+    code: null
+    model_data: data
+    pytorch_version: 1.13.1+cpu
+mlflow_version: 2.1.1
+model_uuid: 2d1ac1eb21b14784bee095112722e1b8
+run_id: 2892ae5af88a4232bbb9b190a12cabbf
+utc_time_created: '2023-02-03 22:52:02.499428'

@@ -50,7 +50,6 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             "HIDDEN_LAYERS_SIZE": meta_parameters.HIDDEN_LAYERS_SIZE,
             "LEARNING_RATE": meta_parameters.LEARNING_RATE, 
             "UNUSED_NODES_PADDING_VALUE": meta_parameters.UNUSED_NODES_PADDING_VALUE,
-            "ADJACENCY_MATRIX_HIT_THRESHOLD": meta_parameters.ADJACENCY_MATRIX_HIT_THRESHOLD
         }
 
     def predict_graph(self, parts: Set[Part]) -> Graph:
@@ -76,9 +75,26 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             X = parts_tensor.to(device)
             pred = self.model(X)
 
-        # Threshold to create a discrete adjacency matrix from the "probability"-matrix:
-        pred_thresh = torch.where(pred > meta_parameters.ADJACENCY_MATRIX_HIT_THRESHOLD, 1, 0)
-        graph = Graph.from_adjacency_matrix(part_list=parts_list, adjacency_matrix=pred_thresh)
+        # Instead of a threshold, only keep the n-1 best scoring edges (with n being the number of nodes)
+        max_edges = len(parts) - 1
+
+        # cut the padding
+        pred[0,len(parts):, :] = 0
+        pred[0, :, len(parts):] = 0
+        
+        # begin with zeros
+        final_adj_matr = torch.zeros_like(pred)
+
+        # Extract the n-1 largest values (flatten and unflatten the tensor)
+        best_values, best_value_flat_indices = torch.topk(pred.flatten(), max_edges)
+        best_value_indices = np.array(np.unravel_index(best_value_flat_indices.numpy(), pred.shape)).T
+
+        # Insert the values into final_pred
+        for index in best_value_indices:
+            final_adj_matr[0][index[1]][index[2]] = 1
+
+        # Create the graph from the 
+        graph = Graph.from_adjacency_matrix(part_list=parts_list, adjacency_matrix=final_adj_matr)
 
         return graph
 

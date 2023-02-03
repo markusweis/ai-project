@@ -39,8 +39,6 @@ Main finding: Nearly all predicted graphs are fully connected.
 
 **Edge Accuracy – Evaluation dataset:** 42.33
 
-**Edge Accuracy – Test dataset:** 43.98
-
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
 - NUM_HIDDEN_LAYERS = 1
@@ -115,13 +113,15 @@ A naive approach to fix the problem of 1.1.1 predicting nearly only fully connec
 
 Main finding: Results look way more like the targetted graphs. Some nodes are not connected. Some even are empty, without any edges. The result is subjectively better based on some visually compared samples, although the edge accuracy score is a little lower.
 
-This is kept as the best version of the threshold-based technique.
+This is kept as the best version of the threshold-based technique. Other meta-parameters are not optimized here, because we believe to perform better with another strategy implemented in 1.2.
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/0e09cc8f920c44c79c91e99d88072aaa)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/db38b53adf584cfe0f0c2be1077fd5995a7c211c)
 
 **Edge Accuracy – Evaluation dataset:** 77.48
+
+**Edge Accuracy – Test dataset:** 77.68
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
@@ -131,6 +131,34 @@ This is kept as the best version of the threshold-based technique.
 - LEARNING_EPOCHS = 5
 - UNUSED_NODES_PADDING_VALUE = -1
 - ADJACENCY_MATRIX_HIT_THRESHOLD = 1.25
+
+### 1.2 Only Node-count - 1 Edges
+In the previous experiments, often a wrong amount of edges were predicted, consequentially leading to suboptimal results.
+An approach to overcome the issue of predicting the wrong amount of edges can be to only accept the node-count -1 edges with the highest prediction. This way, the 
+
+The remainder of meta-parameters is kept the same for this experiment. 
+
+Main finding: Now no graphs with too many edges are predicted, but still some graphs have too few edges and nodes not connected. This can be due to the adjacency matrix being symmetrical (undirected graph). The same edge can be predicted multiple times, leaving no one for other connections. Additionally, sometimes cycles are predicted instead of the desired tree-structures. This should be adressed in further experiments.
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/93e5273f6a3b4207bfeaa7331e5af155)
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 72.47
+
+**Edge Accuracy – Test dataset:** 72.43
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
+
+
+
+
 
 
 ----------

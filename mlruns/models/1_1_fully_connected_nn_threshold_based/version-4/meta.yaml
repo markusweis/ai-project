@@ -1,0 +1,12 @@
+creation_timestamp: 1675463004176
+current_stage: None
+description: ''
+last_updated_timestamp: 1675463004176
+name: 1_1_fully_connected_nn_threshold_based
+run_id: 999e81a8453b4c73b1dc325157905224
+run_link: ''
+source: mlflow-artifacts:/0/999e81a8453b4c73b1dc325157905224/artifacts/base_neural_network_model
+status: READY
+status_message: null
+user_id: null
+version: 4
