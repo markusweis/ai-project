@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/0e09cc8f920c44c79c91e99d88072aaa/artifacts
+end_time: 1675461763512
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 0e09cc8f920c44c79c91e99d88072aaa
+run_name: base_neural_network_model
+run_uuid: 0e09cc8f920c44c79c91e99d88072aaa
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675461419634
+status: 3
+tags: []
+user_id: vscode
