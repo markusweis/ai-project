@@ -57,7 +57,7 @@ Main finding: A bit better, but still nearly all predicted graphs are fully conn
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/07dbce5b6a9646c0adb5da96d663fdfe)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/d78bab422b31ccb4e394ab34e1381eac9d4dd5d4)
 
 **Edge Accuracy – Evaluation dataset:** 48.71
 
