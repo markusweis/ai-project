@@ -35,7 +35,7 @@ Main finding: Nearly all predicted graphs are fully connected.
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/8fc83549563d4814af40dcb2c08a8a14)
 
-[git commit](http://127.0.0.1:5000/#/experiments/0/runs/3bd13ad1e3534ceaad05ba7140c010ae)
+[git commit](https://github.com/markusweis/ai-project/tree/a125257b51e0fa9a53000f45e92a667e247893b6)
 
 **Edge Accuracy – Evaluation dataset:** 42.33
 
@@ -49,6 +49,87 @@ Main finding: Nearly all predicted graphs are fully connected.
 - LEARNING_EPOCHS = 5
 - UNUSED_NODES_PADDING_VALUE = -1
 - ADJACENCY_MATRIX_HIT_THRESHOLD = 0.5
+
+#### 1.1.2
+A naive approach to fix the problem of 1.1.1 predicting nearly only fully connected graphs: Adjusting the threshold: First try: 0.5 -> 0.8
+
+Main finding: A bit better, but still nearly all predicted graphs are fully connected -> Needs more increasing. 
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/07dbce5b6a9646c0adb5da96d663fdfe)
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 48.71
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
+- ADJACENCY_MATRIX_HIT_THRESHOLD = 0.8
+
+#### 1.1.3
+A naive approach to fix the problem of 1.1.1 predicting nearly only fully connected graphs: Adjusting the threshold: Second try: 0.8 -> 1.0
+
+Main finding: 
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/259e1b9a212f4684a7ef26891bfc59a2)
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 64.75
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
+- ADJACENCY_MATRIX_HIT_THRESHOLD = 0.8
+
+#### 1.1.4
+A naive approach to fix the problem of 1.1.1 predicting nearly only fully connected graphs: Adjusting the threshold: Third try: Larger increase from 1.0 to 1.5. Expectation: worse than for 1.0.
+
+Main finding: 
+
+[MLflow experiment]()
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
+- ADJACENCY_MATRIX_HIT_THRESHOLD = 0.8
+
+#### 1.1.5
+A naive approach to fix the problem of 1.1.1 predicting nearly only fully connected graphs: Adjusting the threshold: First try: 1.5 -> 0.8
+
+Main finding: Nearly all predicted graphs are fully connected. 
+
+[MLflow experiment]()
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
+- ADJACENCY_MATRIX_HIT_THRESHOLD = 0.8
+
 
 ----------
 Open ideas for further experiments (fully-connected):
