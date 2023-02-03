@@ -1,18 +1,12 @@
-from itertools import permutations
 import numpy as np
-import pickle
-from typing import Dict, List, Set, Tuple
-from enum import Enum
+from typing import  Set
 import torch
 from torch import nn
-from torch.utils.data import DataLoader, Dataset
-from torchvision import datasets
-from torchvision.transforms import ToTensor
+from torch.utils.data import DataLoader
 from torch.nn.functional import pad
 from tqdm import tqdm
 
 from graph import Graph
-from node import Node
 from part import Part
 from prediction_models.base_neural_network.base_graph_dataset import BaseGraphDataset
 from prediction_models.base_neural_network.base_neural_network_model_definition import BaseNeuralNetworkModelDefinition
@@ -25,6 +19,7 @@ from prediction_models.base_neural_network import meta_parameters
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device")
 
+BATCH_SIZE = 64
 
 class NeuralNetworkPredictionModel(BasePredictionModel):
     """
@@ -53,7 +48,9 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             "MAX_NUMBER_OF_PARTS_PER_GRAPH": meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH,
             "NUM_HIDDEN_LAYERS": meta_parameters.NUM_HIDDEN_LAYERS,
             "HIDDEN_LAYERS_SIZE": meta_parameters.HIDDEN_LAYERS_SIZE,
-            "LEARNING_RATE": meta_parameters.LEARNING_RATE
+            "LEARNING_RATE": meta_parameters.LEARNING_RATE, 
+            "UNUSED_NODES_PADDING_VALUE": meta_parameters.UNUSED_NODES_PADDING_VALUE,
+            "ADJACENCY_MATRIX_HIT_THRESHOLD": meta_parameters.ADJACENCY_MATRIX_HIT_THRESHOLD
         }
 
     def predict_graph(self, parts: Set[Part]) -> Graph:
@@ -71,7 +68,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         # Padding to achieve the same size for each input
         missing_node_count = meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH - len(parts_list)
         if missing_node_count > 0:
-            parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", -1)
+            parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", meta_parameters.UNUSED_NODES_PADDING_VALUE)
 
 
         self.model.eval()
@@ -79,8 +76,8 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             X = parts_tensor.to(device)
             pred = self.model(X)
 
-        
-        pred_thresh = torch.where(pred > 0, 1, 0)
+        # Threshold to create a discrete adjacency matrix from the "probability"-matrix:
+        pred_thresh = torch.where(pred > meta_parameters.ADJACENCY_MATRIX_HIT_THRESHOLD, 1, 0)
         graph = Graph.from_adjacency_matrix(part_list=parts_list, adjacency_matrix=pred_thresh)
 
         return graph
@@ -93,7 +90,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         :return: the loaded prediction model
         """
         loaded_instance = cls()
-        loaded_instance.model.state_dict(torch.load(file_path))
+        loaded_instance.model.load_state_dict(torch.load(file_path))
         return loaded_instance
 
     def log_pytorch_models_to_mlflow(self):
@@ -115,10 +112,10 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         new_instance = cls()
         print("Loading training data...")
         train_dataset = BaseGraphDataset(train_set)
-        train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+        train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
         val_dataset = BaseGraphDataset(val_set)
-        val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=False)
+        val_dataloader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
         
         
         print("Starting training...")
@@ -133,7 +130,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
                 X, y = X.to(device), y.to(device)
                 pred = new_instance.model(X)
                 loss += new_instance._loss_fn(pred, y)
-            normalized_val_loss = loss / (len(val_set) / 64) # is the normlaization correct? 
+            normalized_val_loss = loss / (len(val_set) / BATCH_SIZE) # is the normlaization correct? 
             mlflow.log_metric("val_loss", normalized_val_loss, (t + 1) * len(train_set) )
             print(f"Validation loss: {normalized_val_loss}")    
         return new_instance
@@ -148,7 +145,6 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         torch.save(self.model.state_dict(), file_path)
 
     def _train(self, dataloader):
-        size = len(dataloader.dataset)
         self.model.train()
         progress_bar = tqdm(dataloader) # Wraps progress bar around an interable 
         for (X, y) in progress_bar:

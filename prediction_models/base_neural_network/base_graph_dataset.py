@@ -26,7 +26,7 @@ class BaseGraphDataset(Dataset):
         # Padding to achieve the same size for each input
         missing_node_count = meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH - len(self.parts_lists[idx])
         if missing_node_count > 0:
-            parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", -1)
+            parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", meta_parameters.UNUSED_NODES_PADDING_VALUE)
             adj_matr_tensor = pad(adj_matr_tensor, (0, missing_node_count, 0, missing_node_count), "constant", -1)
 
         return parts_tensor, adj_matr_tensor

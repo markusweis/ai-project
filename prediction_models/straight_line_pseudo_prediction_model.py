@@ -12,7 +12,15 @@ class StraightLinePseudoPredictionModel(BasePredictionModel):
     """
     Pseudo prediction model that forms a straight line of all given nodes and returns it.
     """
+
+    @classmethod
+    def get_name(self) -> str:
+        """
+        :return: Name of the model (used as model and run name)
+        """
+        return "straigt_line_pseudo_prediction_model"
     
+    @classmethod
     def get_meta_params(self) -> dict:
         """
         :return: Dict containing all used meta parameters
@@ -58,6 +66,13 @@ class StraightLinePseudoPredictionModel(BasePredictionModel):
         This method stores the model to a file 
         (needed for evaluating your model on the test set).
         :param file_path: path to file
+        """
+        pass
+
+    def log_pytorch_models_to_mlflow(self):
+        """
+        Logs the model or models to mlflow
+        (nothing to log because here, no actual model is trained)
         """
         pass
 

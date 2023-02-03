@@ -23,14 +23,13 @@ from prediction_models.base_neural_network.neural_network_prediction_model impor
 from prediction_models.prediction_models_enum import PredictionModels, get_model_class
 
 
-# LOADED_MODEL_TYPE = PredictionModels.STRAIGHT_LINE_PSEUDO_PREDICTION_MODEL.value
+# SELECTED_MODEL_TYPE = PredictionModels.STRAIGHT_LINE_PSEUDO_PREDICTION_MODEL.value
 
 
-LOADED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
-# LOADED_MODEL_PATH = "prediction_models/model_instances/test_model.pth"
-LOADED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
+SELECTED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
+SELECTED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
 
-def load_model(file_path: str, model_type: str = LOADED_MODEL_TYPE) -> BasePredictionModel:
+def load_model(file_path: str, model_type: str = SELECTED_MODEL_TYPE) -> BasePredictionModel:
     """
         This method loads the prediction model from a file (needed for evaluating your model on the test set).
         :param file_path: path to file
@@ -138,7 +137,7 @@ def evaluate_edge_accuracy(model, graphs: np.array) -> float:
 
 if __name__ == '__main__':
     """
-    Loads the model at LOADED_MODEL_PATH / argument 2 of type LOADED_MODEL_TYPE / argument 1.
+    Loads the model at SELECTED_MODEL_PATH / argument 2 of type SELECTED_MODEL_TYPE / argument 1.
     Calculates the edge accuracy for the test dataset.
     """
     # Load data
@@ -146,8 +145,8 @@ if __name__ == '__main__':
 
     # Load the model
     print("Loading the model...")
-    model_type = LOADED_MODEL_TYPE if len(sys.argv) < 2 else sys.argv[1]
-    model_file_path = LOADED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
+    model_type = SELECTED_MODEL_TYPE if len(sys.argv) < 2 else sys.argv[1]
+    model_file_path = SELECTED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
     prediction_model: BasePredictionModel = load_model(
         model_file_path, model_type=model_type)
 

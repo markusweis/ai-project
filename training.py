@@ -55,7 +55,7 @@ if __name__ == '__main__':
         # print("Calculating edge accuracy on training data:")
         # edge_acc_training = evaluate_edge_accuracy(new_model_instance, dataset_retriever.get_training_graphs())
         # print(f"Evaluation edge accuracy score on the training dataset: {edge_acc_training}")
-        # Removed due to some graphs being to large for the given edge accuracy calculations!
+        # -> Removed due to some graphs being to large for the given edge accuracy calculations!
 
 
         print("Calculating edge accuracy on evaluation data:")
