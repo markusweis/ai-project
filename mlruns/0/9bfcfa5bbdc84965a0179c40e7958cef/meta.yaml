@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/9bfcfa5bbdc84965a0179c40e7958cef/artifacts
+end_time: 1675176481261
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9bfcfa5bbdc84965a0179c40e7958cef
+run_name: incongruous-fish-215
+run_uuid: 9bfcfa5bbdc84965a0179c40e7958cef
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675175760219
+status: 3
+tags: []
+user_id: vscode

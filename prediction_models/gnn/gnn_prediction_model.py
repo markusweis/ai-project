@@ -18,10 +18,10 @@ from node import Node
 from part import Part
 from prediction_models.gnn.link_predictor import LinkPredictor
 from prediction_models.base_prediction_model import BasePredictionModel
-from prediction_models.gnn.constants import *
+from prediction_models.gnn.meta_parameters import *
 from prediction_models.gnn.dataset import CustomGraphDataset
 from torch_geometric.utils import negative_sampling
-
+from prediction_models.gnn import meta_parameters
 from prediction_models.gnn.gnn_stack import GNNStack
 
 
@@ -40,13 +40,13 @@ class GNNPredictionModel(BasePredictionModel):
             HIDDEN_DIMS,
             HIDDEN_DIMS, 
             NUM_LAYERS,
-            DROPOUT
+            meta_parameters.DROPOUT
         ).to(device)
         self._link_predictor: LinkPredictor = LinkPredictor(
             HIDDEN_DIMS,  # TODO: seperate constants; don't have to be same
             HIDDEN_DIMS,  
             NUM_LAYERS,
-            DROPOUT
+            meta_parameters.DROPOUT
         ).to(device)
         self._embeddings: nn.Embedding = nn.Embedding(
             MAX_NUMBER_OF_PARTS_PER_GRAPH,
@@ -56,8 +56,28 @@ class GNNPredictionModel(BasePredictionModel):
             list(self._embeddings_model.parameters()) + 
             list(self._link_predictor.parameters()) + 
             list(self._embeddings.parameters()),
-            lr=LR, weight_decay=WD
+            lr=LEARNING_RATE, weight_decay=WD
         )
+    
+    @classmethod
+    def get_name(self) -> str:
+        """
+        :return: Name of the model (used as model and run name)
+        """
+        return "gnn_model"
+
+    @classmethod
+    def get_meta_params(self) -> dict:
+        """
+        :return: Dict containing all used meta parameters
+        """
+        return {
+            "MAX_NUMBER_OF_PARTS_PER_GRAPH": meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH,
+            "EMBDEDDING_DIMS": meta_parameters.EMBDEDDING_DIMS,
+            "HIDDEN_LAYERS_SIZE": meta_parameters.HIDDEN_LAYERS_SIZE,
+            "LEARNING_RATE": meta_parameters.LEARNING_RATE,
+            "DROPOUT": meta_parameters.DROPOUT
+        }
 
     def predict_graph(self, parts: Set[Part]) -> Graph:
         """

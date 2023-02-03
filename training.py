@@ -52,9 +52,11 @@ if __name__ == '__main__':
                 val_set=dataset_retriever.get_evaluation_graphs())
         
         # Evaluate the final edge accuracies on both the original training data and the evaluation data
-        print("Calculating edge accuracy on training data:")
-        edge_acc_training = evaluate_edge_accuracy(new_model_instance, dataset_retriever.get_training_graphs())
-        print(f"Evaluation edge accuracy score on the training dataset: {edge_acc_training}")
+        # print("Calculating edge accuracy on training data:")
+        # edge_acc_training = evaluate_edge_accuracy(new_model_instance, dataset_retriever.get_training_graphs())
+        # print(f"Evaluation edge accuracy score on the training dataset: {edge_acc_training}")
+        # Removed due to some graphs being to large for the given edge accuracy calculations!
+
 
         print("Calculating edge accuracy on evaluation data:")
         edge_acc_evaluation = evaluate_edge_accuracy(new_model_instance, dataset_retriever.get_evaluation_graphs())
@@ -66,7 +68,8 @@ if __name__ == '__main__':
         
         # Log parameters and metrics
         mlflow.log_params(new_model_instance.get_meta_params())
-        mlflow.log_metric("edge_acc_training", edge_acc_training)
+        # mlflow.log_metric("edge_acc_training", edge_acc_training) 
+        # Removed due to some graphs being to large for the given edge accuracy calculations!
         mlflow.log_metric("edge_acc_evaluation", edge_acc_evaluation)
         
         # Log the model to mlflow

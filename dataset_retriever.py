@@ -1,9 +1,11 @@
 import numpy as np
 import pickle
 
-RANDOM_SEED = 42
-VAL_SIZE_RATIO = 0.15
-TEST_SIZE_RATIO = 0.15
+RANDOM_SEED = 315
+# Val and Test sizes decreased on purpose in comparison to the ususal 15 - 20 %
+# Reason is the non-performant permutations calculation
+VAL_SIZE_RATIO = 0.05
+TEST_SIZE_RATIO = 0.05
 
 
 class DatasetRetriever:
@@ -46,13 +48,13 @@ class DatasetRetriever:
         """
         Loads all training subset of graphs
         """
-        return self.all_graphs[self._idxs[:self._train_size]]
+        return self.all_graphs[self._idxs[self._test_size + self._val_size:]]
 
     def get_evaluation_graphs(self) -> np.array:
         """
         Loads all evaluation subset of graphs
         """
-        return self.all_graphs[self._idxs[:self._val_size]]
+        return self.all_graphs[self._idxs[self._test_size:self._test_size + self._val_size]]
 
     def get_test_graphs(self) -> np.array:
         """

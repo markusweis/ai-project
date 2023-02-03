@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 from graph import Graph
 from torch_geometric.data import Data
 
-from prediction_models.gnn.constants import MAX_NUMBER_OF_PARTS_PER_GRAPH
+from prediction_models.gnn.meta_parameters import MAX_NUMBER_OF_PARTS_PER_GRAPH
 
 
 
