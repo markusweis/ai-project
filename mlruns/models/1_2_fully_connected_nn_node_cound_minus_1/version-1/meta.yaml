@@ -1,0 +1,12 @@
+creation_timestamp: 1675507247754
+current_stage: None
+description: ''
+last_updated_timestamp: 1675507247754
+name: 1_2_fully_connected_nn_node_cound_minus_1
+run_id: 93e5273f6a3b4207bfeaa7331e5af155
+run_link: ''
+source: mlflow-artifacts:/0/93e5273f6a3b4207bfeaa7331e5af155/artifacts/base_neural_network_model
+status: READY
+status_message: null
+user_id: null
+version: 1

@@ -19,15 +19,20 @@ class BaseNeuralNetworkModelDefinition(nn.Module):
         for i in range(meta_parameters.NUM_HIDDEN_LAYERS):
             self.linear_relu_stack.append(nn.Linear(meta_parameters.HIDDEN_LAYERS_SIZE, meta_parameters.HIDDEN_LAYERS_SIZE))
             self.linear_relu_stack.append(nn.ReLU())
-
-        self.linear_relu_stack.append( nn.Linear(meta_parameters.HIDDEN_LAYERS_SIZE, meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH**2),)
-        self.linear_relu_stack.append(nn.InstanceNorm1d(meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH**2))
+        output_size = self._compute_output_size(meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH)
+        self.linear_relu_stack.append( nn.Linear(meta_parameters.HIDDEN_LAYERS_SIZE, output_size),)
+        self.linear_relu_stack.append(nn.InstanceNorm1d(output_size))
 
        
-        self.unflatten = nn.Unflatten(1, (meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH, meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH))
-
     def forward(self, x):
         x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        y = self.unflatten(logits)
+        y = self.linear_relu_stack(x)
         return y
+
+    def _compute_output_size(self, node_count: int) -> int:
+        size = 0
+        # Iterate through rows:
+        for row in range(node_count - 1):
+            size += node_count - (row + 1)
+
+        return size

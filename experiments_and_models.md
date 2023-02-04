@@ -158,17 +158,31 @@ Main finding: Now no graphs with too many edges are predicted, but still some gr
 
 ### 1.3 Non-redundant Edge-output
 Until here, the output of the model was a full adjacency matrix. Since the desired graph is undirected and has no self-edges, this is highly redundant.
+This was changed here. Instead of a adjacency matrix, a "nonredundant_connections_array" is predicted, that is composed like follows:
 
-#### 1.3.1 
+Adjacency matrix indices:
+``` 
+           A | B | C | ?
+        A  0   1   2   3 
+        B  4   5   6   7
+        C  8   9   10  11
+        ?  12  13  14  15
+``` 
 
+Content indices of the reduced array:
+[1, 2, 3, 6, 7, 11]
 
-Main finding: 
+Otherwise, still the n-1 predicted edges with the highest scores were selected.
 
-[MLflow experiment]()
+Main finding: Now the predicted graphs always have the correct amount of edges. Still, the edge accuracy is about the same as for 1.3 and even lower than for 1.1.5. The reason is that now, often cyclic graphs are predicted. In comparison to the previous experiment, this means two wrong edge-presences (the one closing the cycle is too much, whereas the correct one is missing). Before, often there was only one wrong edge-presence: A missing one. 
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/6da91574faab4976b755ebd02924caef)
 
 [git commit]()
 
-**Edge Accuracy – Evaluation dataset:** 
+**Edge Accuracy – Evaluation dataset:** 71.82
+
+**Edge Accuracy – Test dataset:** 72.48
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
@@ -179,6 +193,26 @@ Main finding:
 - UNUSED_NODES_PADDING_VALUE = -1
 
 
+### 1.4 
+
+
+Main finding: 
+
+[MLflow experiment]()
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 
+
+**Edge Accuracy – Test dataset:** 
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
 
 
 

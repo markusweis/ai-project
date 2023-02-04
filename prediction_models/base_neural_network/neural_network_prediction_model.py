@@ -75,26 +75,45 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             X = parts_tensor.to(device)
             pred = self.model(X)
 
+        pred_one_dim = pred[0]
+
+        # Remove the padding values
+        padded_parts_len=meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH
+        i = 0
+        # Iterate through rows:
+        for row in range(padded_parts_len - 1):
+            if row >= len(parts_list):
+                # In padding area
+                for col in range(row + 1, padded_parts_len):
+                    pred_one_dim[i] = meta_parameters.UNUSED_NODES_PADDING_VALUE
+                    i += 1
+                continue
+            # Iterate through columns
+            for col in range(row + 1, padded_parts_len):
+                if col >= len(parts_list):
+                    # In padding area
+                    pred_one_dim[i] = meta_parameters.UNUSED_NODES_PADDING_VALUE
+                i += 1
+
         # Instead of a threshold, only keep the n-1 best scoring edges (with n being the number of nodes)
         max_edges = len(parts) - 1
-
-        # cut the padding
-        pred[0,len(parts):, :] = 0
-        pred[0, :, len(parts):] = 0
         
         # begin with zeros
-        final_adj_matr = torch.zeros_like(pred)
+        final_reduzed_connections_array = torch.zeros_like(pred_one_dim)
 
         # Extract the n-1 largest values (flatten and unflatten the tensor)
-        best_values, best_value_flat_indices = torch.topk(pred.flatten(), max_edges)
-        best_value_indices = np.array(np.unravel_index(best_value_flat_indices.numpy(), pred.shape)).T
+        best_values, best_value_indices = torch.topk(pred_one_dim, max_edges)
 
         # Insert the values into final_pred
         for index in best_value_indices:
-            final_adj_matr[0][index[1]][index[2]] = 1
+            final_reduzed_connections_array[index] = 1
 
         # Create the graph from the 
-        graph = Graph.from_adjacency_matrix(part_list=parts_list, adjacency_matrix=final_adj_matr)
+        graph = Graph.from_nonredundand_connections_array(
+            part_order=parts_list, 
+            reduzed_connections_array=final_reduzed_connections_array,
+            pad_to_node_count=meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH
+        )
 
         return graph
 
