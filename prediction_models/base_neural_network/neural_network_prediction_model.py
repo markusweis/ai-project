@@ -106,20 +106,33 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
                     edges_per_part[col].append((nonredundand_connections_array_prediction[i], row, col))
                 i += 1
 
-        # Accept the best edge per part
-        # -> This way, all parts get connected
-        # -> The max amount of edges is then n (instead of the desired n-1)
-        # -> Normally, however, two nodes should have the same edge as best prediction
-        #       -> then, the desired n-1 is reached and no cycles are predicted
-        # -> In rare cases with suboptimal training, one single cycle could be predicted
-
-        graph: Graph = Graph(datetime.now())
-
+        # Accept the best edge per part.
+        # If the best edge per part is already added (also the best for a previous node),
+        # the second best is added instead and so on.
+        # -> The amount of edges is then n and thereby, a cycle is included
+        best_edges = list()
         for i, edges in edges_per_part.items():
-            best_pred_value = max([edge[0]for edge in edges])
-            best_edge = [edge for edge in edges if edge[0] == best_pred_value][0]
-            graph.add_undirected_edge(parts_list[best_edge[1]], parts_list[best_edge[2]])
-
+            edges.sort(reverse=True)
+            for edge in edges:
+                if edge not in best_edges:
+                    best_edges.append(edge)
+                    break
+        
+        # Remove the edge with the worse prediction. If this is the only edge to one node, 
+        # the second worst instead and so on
+        best_edges.sort(reverse=False)
+        for i in range(len(best_edges)):
+            # Check if both nodes of the edge still present:
+            best_edges_reversed_without_i = best_edges[:i] + best_edges[i+1:]
+            still_connected_nodes = {edge[1] for edge in best_edges_reversed_without_i}
+            still_connected_nodes = still_connected_nodes.union({edge[2] for edge in best_edges_reversed_without_i})
+            if best_edges[i][1] in still_connected_nodes and best_edges[i][2] in still_connected_nodes:
+                best_edges.pop(i)
+                break
+            
+        graph: Graph = Graph(datetime.now())
+        for edge in best_edges:
+            graph.add_undirected_edge(parts_list[edge[1]], parts_list[edge[2]])
 
         if graph.is_cyclic():
             print("A graph with a cycle was predicted!:")
