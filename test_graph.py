@@ -265,3 +265,170 @@ class TestGraph(unittest.TestCase):
 
         computed_adj_matrix = graph.get_adjacency_matrix(part_order)
         self.assertTrue(np.all(expected_adj_matrix == computed_adj_matrix), 'Adjacency matrices should be equal.')
+
+    # -------------------- from_adjacency_matrix(cls, part_list: List[Part], adjacency_matrix: np.ndarray) --------------------
+
+    def test_from_adjacency_matrix(self):
+        part_a = Part(1, 2)
+        part_b = Part(3, 4)
+        part_c = Part(5, 6)
+        part_d = Part(7, 8)
+        part_e = Part(9, 10)
+
+        """         Target Graph
+              B 
+            /   \
+          A       D - E
+            \   /
+              C
+        """
+        expected_graph = Graph()
+        expected_graph.add_undirected_edge(part_d, part_e)
+        expected_graph.add_undirected_edge(part_b, part_d)
+        expected_graph.add_undirected_edge(part_c, part_d)
+        expected_graph.add_undirected_edge(part_a, part_c)
+        expected_graph.add_undirected_edge(part_a, part_b)
+
+        part_order = (part_a, part_b, part_c, part_d, part_e)
+
+        adj_matrix = np.array([[0, 1, 1, 0, 0],
+                                [1, 0, 0, 1, 0],
+                                [1, 0, 0, 1, 0],
+                                [0, 1, 1, 0, 1],
+                                [0, 0, 0, 1, 0]], dtype=int)
+
+        computed_graph = Graph.from_adjacency_matrix(part_order, adjacency_matrix=adj_matrix)
+        self.assertTrue(expected_graph == computed_graph, 'Graph generated from adj matrix should be equal.')
+
+
+    # -------------------- get_nonredundand_connections_array(self, part_order: Tuple[Part], pad_to_node_count = None,  padding_value: int = -1) --------------------
+
+    def test_get_nonredundand_connections_array_no_padding(self):
+        part_a = Part(1, 2)
+        part_b = Part(3, 4)
+        part_c = Part(5, 6)
+        part_d = Part(7, 8)
+        part_e = Part(9, 10)
+
+        """         Target Graph
+              B 
+            /   \
+          A       D - E
+            \   /
+              C
+        """
+        graph = Graph()
+        graph.add_undirected_edge(part_d, part_e)
+        graph.add_undirected_edge(part_b, part_d)
+        graph.add_undirected_edge(part_c, part_d)
+        graph.add_undirected_edge(part_a, part_c)
+        graph.add_undirected_edge(part_a, part_b)
+
+        part_order = (part_a, part_b, part_c, part_d, part_e)
+
+        expected_reduzed_connections_array = [1, 1, 0, 0, 0, 1, 0, 1, 0, 1]
+
+        computed_reduzed_connections_array = graph.get_nonredundand_connections_array(part_order)
+        self.assertTrue(np.all(expected_reduzed_connections_array == computed_reduzed_connections_array), 'Nonredundand_connections_array should be equal.')
+
+    def test_get_nonredundand_connections_array_with_padding(self):
+        part_a = Part(1, 2)
+        part_b = Part(3, 4)
+        part_c = Part(5, 6)
+        part_d = Part(7, 8)
+        part_e = Part(9, 10)
+
+        """         Target Graph
+              B 
+            /   \
+          A       D - E
+            \   /
+              C
+        """
+        graph = Graph()
+        graph.add_undirected_edge(part_d, part_e)
+        graph.add_undirected_edge(part_b, part_d)
+        graph.add_undirected_edge(part_c, part_d)
+        graph.add_undirected_edge(part_a, part_c)
+        graph.add_undirected_edge(part_a, part_b)
+
+        part_order = (part_a, part_b, part_c, part_d, part_e)
+
+        # Expected Adjacency matrix:
+        # [[0, 1,  1,  0,  0,  -1],
+        # [1,  0,  0,  1,  0,  -1],
+        # [1,  0,  0,  1,  0,  -1],
+        # [0,  1,  1,  0,  1,  -1],
+        # [0,  0,  0,  1,  0,  -1],
+        # [-1, -1, -1, -1, -1, -1]]
+        expected_reduzed_connections_array = [1, 1, 0, 0, -1, 0, 1, 0, -1, 1, 0, -1, 1, -1, -1]
+
+        computed_reduzed_connections_array = graph.get_nonredundand_connections_array(part_order, pad_to_node_count=6, padding_value=-1)
+        self.assertTrue(np.all(expected_reduzed_connections_array == computed_reduzed_connections_array), 'Nonredundand_connections_array should be equal.')
+
+    # -------------------- from_nonredundand_connections_array(cls, part_order: Tuple[Part], reduzed_connections_array: List, pad_to_node_count = None) --------------------
+
+    def test_from_nonredundand_connections_array_no_padding(self):
+        part_a = Part(1, 2)
+        part_b = Part(3, 4)
+        part_c = Part(5, 6)
+        part_d = Part(7, 8)
+        part_e = Part(9, 10)
+
+        """         Target Graph
+              B 
+            /   \
+          A       D - E
+            \   /
+              C
+        """
+        expected_graph = Graph()
+        expected_graph.add_undirected_edge(part_d, part_e)
+        expected_graph.add_undirected_edge(part_b, part_d)
+        expected_graph.add_undirected_edge(part_c, part_d)
+        expected_graph.add_undirected_edge(part_a, part_c)
+        expected_graph.add_undirected_edge(part_a, part_b)
+
+        part_order = (part_a, part_b, part_c, part_d, part_e)
+
+        reduzed_connections_array = [1, 1, 0, 0, 0, 1, 0, 1, 0, 1]
+
+        computed_graph = Graph.from_nonredundand_connections_array(part_order, reduzed_connections_array=reduzed_connections_array)
+        self.assertTrue(expected_graph == computed_graph, 'Graph generated from nonredundand_connections_array should be equal.')
+
+    def test_from_nonredundand_connections_array_with_padding(self):
+        part_a = Part(1, 2)
+        part_b = Part(3, 4)
+        part_c = Part(5, 6)
+        part_d = Part(7, 8)
+        part_e = Part(9, 10)
+
+        """         Target Graph
+              B 
+            /   \
+          A       D - E
+            \   /
+              C
+        """
+        expected_graph = Graph()
+        expected_graph.add_undirected_edge(part_d, part_e)
+        expected_graph.add_undirected_edge(part_b, part_d)
+        expected_graph.add_undirected_edge(part_c, part_d)
+        expected_graph.add_undirected_edge(part_a, part_c)
+        expected_graph.add_undirected_edge(part_a, part_b)
+
+        part_order = (part_a, part_b, part_c, part_d, part_e)
+
+        # Expected Adjacency matrix:
+        # [[0, 1,  1,  0,  0,  -1],
+        # [1,  0,  0,  1,  0,  -1],
+        # [1,  0,  0,  1,  0,  -1],
+        # [0,  1,  1,  0,  1,  -1],
+        # [0,  0,  0,  1,  0,  -1],
+        # [-1, -1, -1, -1, -1, -1]]
+        reduzed_connections_array = [1, 1, 0, 0, -1, 0, 1, 0, -1, 1, 0, -1, 1, -1, -1]
+
+        computed_graph = Graph.from_nonredundand_connections_array(part_order, reduzed_connections_array=reduzed_connections_array, pad_to_node_count=6)
+        self.assertTrue(expected_graph == computed_graph, 'Graph generated from nonredundand_connections_array should be equal.')
+
+

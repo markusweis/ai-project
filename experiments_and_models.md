@@ -142,7 +142,7 @@ Main finding: Now no graphs with too many edges are predicted, but still some gr
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/93e5273f6a3b4207bfeaa7331e5af155)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/5bf0a7125229cbe32486d0eebe6b81c8d60bbcb9)
 
 **Edge Accuracy – Evaluation dataset:** 72.47
 
@@ -156,6 +156,27 @@ Main finding: Now no graphs with too many edges are predicted, but still some gr
 - LEARNING_EPOCHS = 5
 - UNUSED_NODES_PADDING_VALUE = -1
 
+### 1.3 Non-redundant Edge-output
+Until here, the output of the model was a full adjacency matrix. Since the desired graph is undirected and has no self-edges, this is highly redundant.
+
+#### 1.3.1 
+
+
+Main finding: 
+
+[MLflow experiment]()
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
 
 
 
@@ -163,7 +184,6 @@ Main finding: Now no graphs with too many edges are predicted, but still some gr
 
 ----------
 Open ideas for further experiments (fully-connected):
-- Only best n-1 edges
 - Only best edge per node
 - One-hot encoding
 - Padding with -1 or 0

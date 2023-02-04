@@ -247,7 +247,7 @@ class Graph:
 
     def get_adjacency_matrix(self, part_order: Tuple[Part]) -> np.ndarray:
         """
-        Returns
+        Returns a full adjacency matrix in the given order of parts
         :param part_order:
         :return:
         """
@@ -268,6 +268,13 @@ class Graph:
 
     @classmethod
     def from_adjacency_matrix(cls, part_list: List[Part], adjacency_matrix: np.ndarray):
+        """
+        Creates the graph from a given list of parts and an adjacency matrix in the order of the 
+        parts list.
+        """
+        if len(adjacency_matrix.shape) == 3:
+            adjacency_matrix = adjacency_matrix[0]
+
         graph: Graph = Graph(datetime.now())
         # node_list = [Node(i, part) for (i, part) in enumerate(part_list)]
         for part in part_list:
@@ -275,9 +282,97 @@ class Graph:
         
         for row in range(len(part_list)):
             for col in range(len(part_list)):
-                if adjacency_matrix[0][row][col] == 1:
+                if adjacency_matrix[row][col] == 1:
                     graph.add_undirected_edge(part_list[row], part_list[col])
         
         return graph
 
+    def get_nonredundand_connections_array(self, part_order: Tuple[Part], pad_to_node_count = None,  padding_value: int = -1) -> List:
+        """
+        Returns an array representing non-redundant parts of the adjacency matrix in the given order of parts
+        Optionally, the list is padded to a fixed count of nodes with the defined values.
 
+        Example:
+        part_order=[A, B, C], pad_to_node_count=4, padding_value=-1:
+        Adjacency matrix indices:
+           A | B | C | ?
+        A  0   1   2   3 
+        B  4   5   6   7
+        C  8   9   10  11
+        ?  12  13  14  15
+        Content indices of the reduced array:
+        [1, 2, 3, 6, 7, 11]
+       
+        """
+        assert pad_to_node_count is None or pad_to_node_count >= len(part_order), \
+            "Can not pad to a node amount smaller than the acutal count"
+
+        reduzed_connections_array =  []
+        edges: Dict[Node, List[Node]] = self.get_edges()
+        padded_parts_len = len(part_order) if pad_to_node_count is None else pad_to_node_count
+
+        # Iterate through rows:
+        for i in range(padded_parts_len - 1):
+            if i >= len(part_order):
+                # In padding area
+                for j in range(i + 1, padded_parts_len):
+                    reduzed_connections_array.append(padding_value)
+                continue
+
+            i_node = self.__get_node_for_part(part_order[i])
+             
+            # Iterate through columns
+            for j in range(i + 1, padded_parts_len):
+                if j >= len(part_order):
+                    # In padding area
+                    reduzed_connections_array.append(padding_value)
+                    continue
+
+                j_node = self.__get_node_for_part(part_order[j])
+                if j_node in edges[i_node]:
+                    reduzed_connections_array.append(1)
+                else:
+                    reduzed_connections_array.append(0)
+
+        return reduzed_connections_array
+
+    @classmethod
+    def from_nonredundand_connections_array(cls, part_order: Tuple[Part], reduzed_connections_array: List, pad_to_node_count = None):
+        """
+        Creates the graph from a given list of parts and an array representation of the 
+        non-redundant parts of the adjacency matrix in the given order of parts.
+        A padding can be considered.
+        """
+        assert pad_to_node_count is None or pad_to_node_count >= len(part_order), \
+            "Can not use a padding smaller than the acutal count"
+
+        graph: Graph = Graph(datetime.now())
+        padded_parts_len = len(part_order) if pad_to_node_count is None else pad_to_node_count
+
+        for part in part_order:
+            graph.add_node_without_edge(part)
+
+        # Current reduced index:
+        i = 0
+
+        # Iterate through rows:
+        for row in range(padded_parts_len - 1):
+            if row >= len(part_order):
+                # In padding area
+                i += padded_parts_len - (row + 1)
+                continue
+             
+            # Iterate through columns
+            for col in range(row + 1, padded_parts_len):
+                if col >= len(part_order):
+                    # In padding area
+                    i += 1
+                    continue
+
+                if reduzed_connections_array[i] == 1:
+                    graph.add_undirected_edge(part_order[row], part_order[col])
+
+                i += 1
+        
+        
+        return graph
