@@ -1,3 +1,4 @@
+from datetime import datetime
 import numpy as np
 from typing import  Set
 import torch
@@ -76,6 +77,57 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             pred = self.model(X)
 
         pred_one_dim = pred[0]
+
+        return self.get_graph_from_nonredundand_connections_array_prediction(pred_one_dim, parts_list)
+
+    def get_graph_from_nonredundand_connections_array_prediction(self, nonredundand_connections_array_prediction, parts_list) -> Graph:   
+        # Instead of a threshold or only keeping the n-1 best scoring edges, make sure that every
+        # node is connected and there are no cycles
+        
+        # Extract the edges per node:
+        edges_per_part: dict = {i:[] for i in range(len(parts_list))}
+        padded_parts_len=meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH
+        i = 0
+        # Iterate through rows:
+        for row in range(padded_parts_len - 1):
+            if row >= len(parts_list):
+                # In padding area
+                for col in range(row + 1, padded_parts_len):
+                    i += 1
+                continue
+            # Iterate through columns
+            for col in range(row + 1, padded_parts_len):
+                if col >= len(parts_list):
+                    # In padding area
+                    pass
+                else:
+                    # Add edge to both connected nodes:
+                    edges_per_part[row].append((nonredundand_connections_array_prediction[i], row, col))
+                    edges_per_part[col].append((nonredundand_connections_array_prediction[i], row, col))
+                i += 1
+
+        # Accept the best edge per part
+        # -> This way, all parts get connected
+        # -> The max amount of edges is then n (instead of the desired n-1)
+        # -> Normally, however, two nodes should have the same edge as best prediction
+        #       -> then, the desired n-1 is reached and no cycles are predicted
+        # -> In rare cases with suboptimal training, one single cycle could be predicted
+
+        graph: Graph = Graph(datetime.now())
+
+        for i, edges in edges_per_part.items():
+            best_pred_value = max([edge[0]for edge in edges])
+            best_edge = [edge for edge in edges if edge[0] == best_pred_value][0]
+            graph.add_undirected_edge(parts_list[best_edge[1]], parts_list[best_edge[2]])
+
+
+        if graph.is_cyclic():
+            print("A graph with a cycle was predicted!:")
+            print(graph)
+
+        return graph
+
+        #######################################
 
         # Remove the padding values
         padded_parts_len=meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH

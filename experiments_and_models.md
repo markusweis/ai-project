@@ -178,7 +178,7 @@ Main finding: Now the predicted graphs always have the correct amount of edges. 
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/6da91574faab4976b755ebd02924caef)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/a71859a3a904760834ca40124db55f26654da64d)
 
 **Edge Accuracy – Evaluation dataset:** 71.82
 
@@ -193,18 +193,26 @@ Main finding: Now the predicted graphs always have the correct amount of edges. 
 - UNUSED_NODES_PADDING_VALUE = -1
 
 
-### 1.4 
+### 1.4 Best Edge Per Node
+To solve the issue of having nodes without any edges – and therefore cycles at other places – a
+strategy is to accept one (best) edge per node. 
 
+### 1.4.1
+Accept the best edge per part
+- This way, all parts get connected
+- The max amount of edges is then n (instead of the desired n-1)
+- Normally, however, two nodes should have the same edge as best prediction
+    - then, the desired n-1 is reached and no cycles are predicted
+- In rare cases with suboptimal training, one single cycle could be predicted
 
-Main finding: 
+Main finding: The edge accuracy is improved, but another issue occurs: While now, all parts are connected with at least one edge, this does not mean that they all are connected to a single graph. Instead, the same edges are considered best for multiple nodes, keeping a lower number of total edges
+than the desired n-1.
 
-[MLflow experiment]()
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/ba0cb07fa16b4d2db284a0960e5ac9c4)
 
 [git commit]()
 
-**Edge Accuracy – Evaluation dataset:** 
-
-**Edge Accuracy – Test dataset:** 
+**Edge Accuracy – Evaluation dataset:** 76.95
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
@@ -219,9 +227,11 @@ Main finding:
 ----------
 Open ideas for further experiments (fully-connected):
 - Only best edge per node
+- n-1 total best edges, as long as they dont form a cycle
 - One-hot encoding
 - Padding with -1 or 0
 - Random instead of sorting
+- Sigmoid instead of InstanceNorm1d / removing InstanceNorm1d without any replacement?
 
 ## 2. Graph-convolutional Neural Network
 
