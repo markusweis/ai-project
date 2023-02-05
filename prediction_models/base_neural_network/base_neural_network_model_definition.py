@@ -13,7 +13,11 @@ class BaseNeuralNetworkModelDefinition(nn.Module):
 
         self.linear_relu_stack = nn.Sequential()
 
-        self.linear_relu_stack.append(nn.Linear(meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH*2, meta_parameters.HIDDEN_LAYERS_SIZE))
+        # Range of ids (+ 2 because id 0 can exist and last is reserved for node padding)
+        num_part_ids = meta_parameters.MAX_SUPPORTED_PART_ID + 2
+        num_family_ids = meta_parameters.MAX_SUPPORTED_FAMILY_ID + 2
+
+        self.linear_relu_stack.append(nn.Linear(meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH*(num_part_ids+num_family_ids), meta_parameters.HIDDEN_LAYERS_SIZE))
         self.linear_relu_stack.append(nn.ReLU())
 
         for i in range(meta_parameters.NUM_HIDDEN_LAYERS):
@@ -21,8 +25,6 @@ class BaseNeuralNetworkModelDefinition(nn.Module):
             self.linear_relu_stack.append(nn.ReLU())
         output_size = self._compute_output_size(meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH)
         self.linear_relu_stack.append( nn.Linear(meta_parameters.HIDDEN_LAYERS_SIZE, output_size),)
-        self.linear_relu_stack.append(nn.InstanceNorm1d(output_size))
-
        
     def forward(self, x):
         x = self.flatten(x)

@@ -260,7 +260,7 @@ Main finding: The meta-parameters seem suboptimal, as the accuracy is worse than
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/bb0ec35c01f3479bb6a932dffbe74849)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/7cb8e4cc78aaa337604aaa04cb3a6e1c4a17798b)
 
 **Edge Accuracy – Evaluation dataset:** 72.91
 
@@ -281,7 +281,7 @@ Main finding: The UNUSED_NODES_PADDING_VALUE has a large impact on the resulting
 
 [MLflow experiment (best with parameter 0.8)](http://127.0.0.1:5000/#/experiments/0/runs/bb0ec35c01f3479bb6a932dffbe74849)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/7cb8e4cc78aaa337604aaa04cb3a6e1c4a17798b)
 
 **Edge Accuracy – Evaluation dataset (UNUSED_NODES_PADDING_VALUE=0.8):** 81.07
 
@@ -309,6 +309,26 @@ Other edge accuracies:
 - MAX_SUPPORTED_PART_ID = 2270
 - MAX_SUPPORTED_FAMILY_ID = 100
 
+#### 1.6.3
+A standardization layer was previously included, that was introduced for the threshold solutions in 1.1.*. This was removed, as it is no longer required
+
+Main finding: The loss function now gets way closer to 0. 
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/ff6937e4f6e742fbb9cb8b3ffb1af791)
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 81.05
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = 0.8
+- MAX_SUPPORTED_PART_ID = 2270
+- MAX_SUPPORTED_FAMILY_ID = 100
 
 ----------
 Open ideas for further experiments (fully-connected):
