@@ -250,16 +250,19 @@ Main finding: The structure of the predicted graphs now is as desired: All nodes
 The next experiment adresses potential performance-flaws related to the model input.
 Until here, the part_id and family_id were directly used as input. This e.g., makes parts with IDs 3 and 4 more similar then IDs 3 and 800, although semantically, the latter might be more similar.
 
-To solve this, a variant of one-hot encoding is used in this experiment.
+To solve this, a dual one-hot encoding is used in this experiment (for both the part_id and family_id).
 As analyzed with `dataset_statistics.py`, the maximum part_id is 2270 and the maximum family_id is 100. The according ranges are therefore used for the encoding.
 
-Main finding: 
+#### 1.6.1
+Within this initial one-hot experiment, the remainder of meta-parameters was kept the same.
 
-[MLflow experiment]()
+Main finding: The meta-parameters seem suboptimal, as the accuracy is worse than without the one-hot encoding.
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/bb0ec35c01f3479bb6a932dffbe74849)
 
 [git commit]()
 
-**Edge Accuracy – Evaluation dataset:** 
+**Edge Accuracy – Evaluation dataset:** 72.91
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
@@ -268,6 +271,43 @@ Main finding:
 - LEARNING_RATE = 0.05
 - LEARNING_EPOCHS = 5
 - UNUSED_NODES_PADDING_VALUE = -1
+- MAX_SUPPORTED_PART_ID = 2270
+- MAX_SUPPORTED_FAMILY_ID = 100
+
+#### 1.6.2
+The first meta-parameter to optimize was the expected output-value for the padding area. Multiple values were tested and are bundled here, because only one value changed.
+
+Main finding: The UNUSED_NODES_PADDING_VALUE has a large impact on the resulting edge accuracy of the actual nodes. A value of 0.8 seems to be the optimum.
+
+[MLflow experiment (best with parameter 0.8)](http://127.0.0.1:5000/#/experiments/0/runs/bb0ec35c01f3479bb6a932dffbe74849)
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset (UNUSED_NODES_PADDING_VALUE=0.8):** 81.07
+
+Other edge accuracies:
+- UNUSED_NODES_PADDING_VALUE = 0 -> edge accuracy: 75.18
+- UNUSED_NODES_PADDING_VALUE = 1.0 -> edge accuracy: 80.63
+- UNUSED_NODES_PADDING_VALUE = 0.5 -> edge accuracy: 80.7
+- UNUSED_NODES_PADDING_VALUE = 2 -> edge accuracy: 71.81
+- UNUSED_NODES_PADDING_VALUE = 100 -> edge accuracy: 72.42
+- UNUSED_NODES_PADDING_VALUE = -100 -> edge accuracy: 73.25
+- UNUSED_NODES_PADDING_VALUE = 1.1 -> edge accuracy: 78.73
+- UNUSED_NODES_PADDING_VALUE = 0.9 -> edge accuracy: 80.97
+- UNUSED_NODES_PADDING_VALUE = 0.8 -> edge accuracy: 81.07
+- UNUSED_NODES_PADDING_VALUE = 0.7 -> edge accuracy: 80.94
+- UNUSED_NODES_PADDING_VALUE = 0.75 -> edge accuracy: 80.67
+- UNUSED_NODES_PADDING_VALUE = 0.85 -> edge accuracy: 81.06
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE as mentioned above
+- MAX_SUPPORTED_PART_ID = 2270
+- MAX_SUPPORTED_FAMILY_ID = 100
 
 
 ----------

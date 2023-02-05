@@ -18,10 +18,12 @@ if __name__ == '__main__':
     max_part_id = first_part.get_part_id()
     min_family_id = first_part.get_family_id()
     max_family_id = first_part.get_family_id()
+    max_amount_of_nodes = len(graphs[0].get_nodes())
 
     graph: Graph
     for graph in graphs:
         nodes = graph.get_nodes()
+        max_amount_of_nodes = max(len(nodes), max_amount_of_nodes)
         node: Node
         for node in nodes:
             part = node.get_part()
@@ -35,3 +37,4 @@ if __name__ == '__main__':
     print(f"Max part id: {max_part_id}")
     print(f"Min family id: {min_family_id}")
     print(f"Max family id: {max_family_id}")
+    print(f"Max amount of nodes: {max_amount_of_nodes}")

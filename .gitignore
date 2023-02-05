@@ -161,3 +161,7 @@ cython_debug/
 
 # Temporary plots:
 temporary_graph_plot.png
+
+# MLflow artifacts (too big for github)
+mlartifacts/0/
+prediction_models/model_instances/

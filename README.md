@@ -24,6 +24,8 @@ Run `python -m unittest` from the command line in the repository root folder to 
 ## MLflow
 The created ML models and experiments are managed with MLflow.
 
+**Important:** The actual models got too large for a github repository. Therefore, they are stored in a cloud instead. You can load them here (https://nextcloud.timo-peter.de/s/A8wT4KzwnJfHfnj). To load them via mlflow, download the contents to `./mlartifacts/0`. This link is read-only. To get a link with write-access, ask the maintainers.
+
 Before creating a new model, start Mlflow UI with ```mlflow ui```.
 It should be running on  http://localhost:5000.
 

@@ -36,12 +36,39 @@ class GraphDataset(Dataset):
         :param extra_dimension: Whether to embed the  tensor in an extra dimension simulating the same tensor 
         shape as for a batch input
         """
-        parts_features = [[part.get_part_id(), part.get_family_id()] for part in parts_list]
-        parts_features_extra_dim = [parts_features] if extra_dimension else parts_features
-        parts_tensor = torch.tensor(parts_features_extra_dim, dtype=torch.float32)
+        # Range of ids (+ 2 because id 0 can exist and last is reserved for node padding)
+        num_part_ids = meta_parameters.MAX_SUPPORTED_PART_ID + 2
+        padding_part_id = meta_parameters.MAX_SUPPORTED_PART_ID + 1
+        num_family_ids = meta_parameters.MAX_SUPPORTED_FAMILY_ID + 2
+        padding_family_id = meta_parameters.MAX_SUPPORTED_FAMILY_ID + 1
+
+        # Feature values
+        part_ids = [part.get_part_id() for part in parts_list]
+        family_ids = [part.get_family_id() for part in parts_list]
+        
         # Padding to achieve the same size for each input
         missing_node_count = meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH - len(parts_list)
-        if missing_node_count > 0:
-            parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", meta_parameters.UNUSED_NODES_PADDING_VALUE)
+        padding_list_part_ids = [padding_part_id for _ in range(missing_node_count)]
+        padding_list_fam_ids = [padding_family_id for _ in range(missing_node_count)]
+        part_ids.extend(padding_list_part_ids)
+        family_ids.extend(padding_list_fam_ids)
+        
+        # Feature tensors
+        part_ids_tensor = torch.tensor(part_ids)
+        family_ids_tensor = torch.tensor(family_ids)
 
-        return parts_tensor
+        # On hot encodings
+        part_ids_one_hot = torch.nn.functional.one_hot(part_ids_tensor, num_classes=num_part_ids)
+        family_ids_one_hot = torch.nn.functional.one_hot(family_ids_tensor, num_classes=num_family_ids)
+        
+        # Combine both tensors
+        combined_tensor = torch.cat((part_ids_one_hot, family_ids_one_hot), 1)
+
+        # Change the type to match other layers
+        combined_tensor = combined_tensor.type(torch.float32)
+
+        # Add the extra dimension, if requested
+        if extra_dimension:
+            return combined_tensor[None, :]
+        else:
+            return combined_tensor

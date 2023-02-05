@@ -32,6 +32,8 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         self._optimizer = torch.optim.SGD(self.model.parameters(), lr=meta_parameters.LEARNING_RATE)
         print("Using model:")
         print(self.model)
+        print("Meta-parameters:")
+        print(self.get_meta_params())
 
     @classmethod
     def get_name(self) -> str:
@@ -51,6 +53,8 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
             "HIDDEN_LAYERS_SIZE": meta_parameters.HIDDEN_LAYERS_SIZE,
             "LEARNING_RATE": meta_parameters.LEARNING_RATE, 
             "UNUSED_NODES_PADDING_VALUE": meta_parameters.UNUSED_NODES_PADDING_VALUE,
+            "MAX_SUPPORTED_PART_ID": meta_parameters.MAX_SUPPORTED_PART_ID,
+            "MAX_SUPPORTED_FAMILY_ID": meta_parameters.MAX_SUPPORTED_FAMILY_ID
         }
 
     def predict_graph(self, parts: Set[Part]) -> Graph:
