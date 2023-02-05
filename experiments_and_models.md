@@ -71,7 +71,7 @@ Main finding: A bit better, but still nearly all predicted graphs are fully conn
 #### 1.1.3
 A naive approach to fix the problem of 1.1.1 predicting nearly only fully connected graphs: Adjusting the threshold: Second try: 0.8 -> 1.0
 
-Main finding: 
+Main finding: Since the output is standardized to a mean (μ) of 0 and standard deviation (σ) of 1, also values above 1.0 are predicted. This shows here, as the results get dramatically better.
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/259e1b9a212f4684a7ef26891bfc59a2)
 
@@ -221,16 +221,22 @@ than the desired n-1.
 - LEARNING_EPOCHS = 5
 - UNUSED_NODES_PADDING_VALUE = -1
 
-### 1.5 Cyclic-free Global Best Edges
+### 1.5 Cycle-free Global Best Edges
+Since the previous strategy to overcome the issue of unconnected graph outputs, another strategy was developed:
 
+First, the global highest predicted edge is accepted as starting point.
+Going from there, the next best edge is chosen, that is connected to the already known
+parts of the graph and adds exactly one new node to the structure. Thereby, no cycles
+can be created. This is repeated until n-1 edges are selected. By then, also every 
+given part is connected into the single graph.
 
-Main finding: 
+Main finding: The structure of the predicted graphs now is as desired: All nodes connected and cycle-free. The edge accuracy is still below the best previous results and needs improvement on other elements, like the input and meta-parameters. The reason for worse edge accuracy in comparison to e.g., 1.1.5 is again, that a wrong edge is considered worse than no edge.
 
-[MLflow experiment]()
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/05763fdd7466471ea153f3eabaf065e7)
 
 [git commit]()
 
-**Edge Accuracy – Evaluation dataset:** 
+**Edge Accuracy – Evaluation dataset:** 75.06
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
@@ -243,8 +249,6 @@ Main finding:
 
 ----------
 Open ideas for further experiments (fully-connected):
-- Only best edge per node
-- n-1 total best edges, as long as they dont form a cycle
 - One-hot encoding
 - Padding with -1 or 0
 - Random instead of sorting
