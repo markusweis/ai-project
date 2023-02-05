@@ -274,7 +274,7 @@ Main finding: The meta-parameters seem suboptimal, as the accuracy is worse than
 - MAX_SUPPORTED_PART_ID = 2270
 - MAX_SUPPORTED_FAMILY_ID = 100
 
-#### 1.6.2
+#### 1.6.2 Unused nodes padding value
 The first meta-parameter to optimize was the expected output-value for the padding area. Multiple values were tested and are bundled here, because only one value changed.
 
 Main finding: The UNUSED_NODES_PADDING_VALUE has a large impact on the resulting edge accuracy of the actual nodes. A value of 0.8 seems to be the optimum.
@@ -309,16 +309,37 @@ Other edge accuracies:
 - MAX_SUPPORTED_PART_ID = 2270
 - MAX_SUPPORTED_FAMILY_ID = 100
 
-#### 1.6.3
+#### 1.6.3 Removed standardization
 A standardization layer was previously included, that was introduced for the threshold solutions in 1.1.*. This was removed, as it is no longer required
 
 Main finding: The loss function now gets way closer to 0. 
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/ff6937e4f6e742fbb9cb8b3ffb1af791)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/19c0769ac79122078e731a2d463a4023047aaed2)
 
 **Edge Accuracy – Evaluation dataset:** 81.05
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = 0.8
+- MAX_SUPPORTED_PART_ID = 2270
+- MAX_SUPPORTED_FAMILY_ID = 100
+
+#### 1.6.4 Mean Squared Error
+Changed to the Mean Squared Error (MSE) loss function.
+
+Main finding:
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/173e07768efc426bb553fb7fc6c29cc5)
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
