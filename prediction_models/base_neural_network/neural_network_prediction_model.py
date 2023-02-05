@@ -84,8 +84,8 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         # Instead of a threshold or only keeping the n-1 best scoring edges, make sure that every
         # node is connected and there are no cycles
         
-        # Extract the edges per node:
-        edges_per_part: dict = {i:[] for i in range(len(parts_list))}
+        # Extract all non-padding edges:
+        edges = list()
         padded_parts_len=meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH
         i = 0
         # Iterate through rows:
@@ -102,9 +102,43 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
                     pass
                 else:
                     # Add edge to both connected nodes:
-                    edges_per_part[row].append((nonredundand_connections_array_prediction[i], row, col))
-                    edges_per_part[col].append((nonredundand_connections_array_prediction[i], row, col))
+                   edges.append((nonredundand_connections_array_prediction[i], row, col))
                 i += 1
+
+        # Sort to accept the highest predicted edges
+        edges.sort(reverse=True)
+
+        accepted_edges = list()
+        connected_nodes = set()
+        graph: Graph = Graph(datetime.now())
+        
+        for edge in edges:
+            if edge[1] not in connected_nodes or edge[2] not in connected_nodes:
+                accepted_edges.append(edge)
+                connected_nodes.add(edge[1])
+                connected_nodes.add(edge[2])
+                graph.add_undirected_edge(parts_list[edge[1]], parts_list[edge[2]])
+
+            # Quit if desired amount of edges reached
+            if len(accepted_edges) == len(parts_list) - 1:
+                break
+
+        if graph.is_cyclic():
+            print("A graph with a cycle was predicted!:")
+            print(graph)
+
+        if len(connected_nodes) < len(parts_list):
+            print("Not all parts connected in graph:")
+            print(graph)
+
+        return graph
+
+        # TODO
+        # Stattdessen erst allerbeste
+        # -> while statt for und immer popen, wenn verwendet
+        # Nächstbeste, die anbaut an bisherigen knoten
+
+
 
         # Accept the best edge per part
         # -> This way, all parts get connected

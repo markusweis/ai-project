@@ -197,7 +197,6 @@ Main finding: Now the predicted graphs always have the correct amount of edges. 
 To solve the issue of having nodes without any edges – and therefore cycles at other places – a
 strategy is to accept one (best) edge per node. 
 
-### 1.4.1
 Accept the best edge per part
 - This way, all parts get connected
 - The max amount of edges is then n (instead of the desired n-1)
@@ -210,7 +209,7 @@ than the desired n-1.
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/ba0cb07fa16b4d2db284a0960e5ac9c4)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/17106337379bb4f1cfb687b96ff281bd319ec5f9)
 
 **Edge Accuracy – Evaluation dataset:** 76.95
 
@@ -222,6 +221,24 @@ than the desired n-1.
 - LEARNING_EPOCHS = 5
 - UNUSED_NODES_PADDING_VALUE = -1
 
+### 1.5 Cyclic-free Global Best Edges
+
+
+Main finding: 
+
+[MLflow experiment]()
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
 
 
 ----------
