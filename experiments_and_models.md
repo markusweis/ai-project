@@ -333,9 +333,29 @@ Main finding: The loss function now gets way closer to 0.
 #### 1.6.4 Mean Squared Error
 Changed to the Mean Squared Error (MSE) loss function.
 
-Main finding:
+Main finding: MSE seems to perform a little better than L1Loss
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/173e07768efc426bb553fb7fc6c29cc5)
+
+[git commit](https://github.com/markusweis/ai-project/tree/90dacd4b5526645d525f0e2a6b8568b2242e116a)
+
+**Edge Accuracy – Evaluation dataset:** 
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = 0.8
+- MAX_SUPPORTED_PART_ID = 2270
+- MAX_SUPPORTED_FAMILY_ID = 100
+
+#### 1.6.5 
+
+Main finding: 
+
+[MLflow experiment]()
 
 [git commit]()
 
