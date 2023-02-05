@@ -234,9 +234,32 @@ Main finding: The structure of the predicted graphs now is as desired: All nodes
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/05763fdd7466471ea153f3eabaf065e7)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/a83f8b14bee7b23ea7952552ac0ee530eec5b7da)
 
 **Edge Accuracy – Evaluation dataset:** 75.06
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 512
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = -1
+
+### 1.6 One-hot Encoding
+The next experiment adresses potential performance-flaws related to the model input.
+Until here, the part_id and family_id were directly used as input. This e.g., makes parts with IDs 3 and 4 more similar then IDs 3 and 800, although semantically, the latter might be more similar.
+
+To solve this, a variant of one-hot encoding is used in this experiment.
+As analyzed with `dataset_statistics.py`, the maximum part_id is 2270 and the maximum family_id is 100. The according ranges are therefore used for the encoding.
+
+Main finding: 
+
+[MLflow experiment]()
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
@@ -253,6 +276,7 @@ Open ideas for further experiments (fully-connected):
 - Padding with -1 or 0
 - Random instead of sorting
 - Sigmoid instead of InstanceNorm1d / removing InstanceNorm1d without any replacement?
+- check for overfitting: edge accuracy on (a little and working subset of) the training set
 
 ## 2. Graph-convolutional Neural Network
 

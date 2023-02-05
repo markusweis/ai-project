@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from graph import Graph
 from part import Part
-from prediction_models.base_neural_network.base_graph_dataset import BaseGraphDataset
+from prediction_models.base_neural_network.base_graph_dataset import GraphDataset
 from prediction_models.base_neural_network.base_neural_network_model_definition import BaseNeuralNetworkModelDefinition
 from prediction_models.base_prediction_model import BasePredictionModel
 import mlflow
@@ -63,13 +63,7 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         # Sort the parts to reduce possible combinations
         parts_list.sort()
 
-        parts_tensor = torch.tensor([[[part.get_part_id(), part.get_family_id()] for part in parts_list]], dtype=torch.float32)
-
-        # Padding to achieve the same size for each input
-        missing_node_count = meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH - len(parts_list)
-        if missing_node_count > 0:
-            parts_tensor = pad(parts_tensor, (0, 0, 0, missing_node_count), "constant", meta_parameters.UNUSED_NODES_PADDING_VALUE)
-
+        parts_tensor = GraphDataset.get_parts_tensor(parts_list=parts_list, extra_dimension=True)
 
         self.model.eval()
         with torch.no_grad():
@@ -80,7 +74,8 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
 
         return self.get_graph_from_nonredundand_connections_array_prediction(pred_one_dim, parts_list)
 
-    def get_graph_from_nonredundand_connections_array_prediction(self, nonredundand_connections_array_prediction, parts_list) -> Graph:   
+    @classmethod
+    def get_graph_from_nonredundand_connections_array_prediction(cls, nonredundand_connections_array_prediction, parts_list) -> Graph:   
         # Instead of a threshold or only keeping the n-1 best scoring edges, make sure that every
         # node is connected and there are no cycles
         
@@ -169,10 +164,10 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         """
         new_instance = cls()
         print("Loading training data...")
-        train_dataset = BaseGraphDataset(train_set)
+        train_dataset = GraphDataset(train_set)
         train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-        val_dataset = BaseGraphDataset(val_set)
+        val_dataset = GraphDataset(val_set)
         val_dataloader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
         
         
