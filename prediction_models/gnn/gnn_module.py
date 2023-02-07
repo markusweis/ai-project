@@ -9,7 +9,7 @@ import torch_geometric as pyg
 
 
 class GNNModel(torch.nn.Module):
-    def __init__(self, num_nodes, input_dim, emb_features, num_gnn_layers, fc_features, num_fc_layers, dropout):
+    def __init__(self, input_dim, emb_features, num_gnn_layers, fc_features, num_fc_layers, dropout):
         super(GNNModel, self).__init__()
         conv_model = pyg.nn.DenseSAGEConv
 
@@ -28,6 +28,7 @@ class GNNModel(torch.nn.Module):
         for _ in range(num_fc_layers - 2):
             self.lins.append(nn.Linear(fc_features, fc_features))
         self.lins.append(nn.Linear(fc_features, 1))
+        self.sig = nn.Sigmoid()
 
     def forward(self, x: torch.tensor):
         """
@@ -38,8 +39,9 @@ class GNNModel(torch.nn.Module):
         # edge_index = edge_index.type(torch.int64)
         
         # build fully connected graph
-        adj = torch.ones(x.size(dim=1))
-
+        adj = torch.ones((x.size(dim=0)), x.size(dim=0))
+        # add batch dim 
+        #adj  = adj[None, :]
         # gnn pass
         for i in range(self.num_layers):
             x = self.convs[i](x, adj)
@@ -48,19 +50,21 @@ class GNNModel(torch.nn.Module):
 
         
         # Take embeddings and for every edge pass FC layers 
+        x = torch.squeeze(x) # remove first (batch) dim
         adj = torch.triu(adj, diagonal=1)
         edge_index = adj.nonzero().t().contiguous()
 
         edge_embeddings = x[edge_index[0]] * x[edge_index[1]] # (E, d)
 
         # FC Layers 
+        o = edge_embeddings
         for lin in self.lins[:-1]:
-            edge_embeddings = lin(edge_embeddings)
-            edge_embeddings = F.relu(edge_embeddings)
-            edge_embeddings = F.dropout(edge_embeddings, p=self.dropout, training=self.training)
-        edge_embeddings = self.lins[-1](edge_embeddings) # (E, )
+            o = lin(o)
+            o = F.relu(o)
+            o = F.dropout(o, p=self.dropout, training=self.training)
+        o = self.lins[-1](o) # (E, )
 
-        return torch.sigmoid(edge_embeddings)
+        return torch.squeeze(self.sig(o))
 
 
 

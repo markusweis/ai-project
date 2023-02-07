@@ -1,6 +1,8 @@
 import numpy as np
 import pickle
 
+from graph import Graph
+
 RANDOM_SEED = 315
 # Val and Test sizes decreased on purpose in comparison to the ususal 15 - 20 %
 # Reason is the non-performant permutations calculation
@@ -61,3 +63,6 @@ class DatasetRetriever:
         Loads all testing subset of graphs
         """
         return self.all_graphs[self._idxs[:self._test_size]]
+
+    def get_random_graph(self) -> Graph:
+        return np.random.choice(self.all_graphs)

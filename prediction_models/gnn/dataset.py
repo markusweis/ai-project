@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 from graph import Graph
 from torch_geometric.data import Data
 
-from prediction_models.gnn.meta_parameters import MAX_NUMBER_OF_PARTS_PER_GRAPH
+from prediction_models.gnn.meta_parameters import MAX_SUPPORTED_PART_ID
 
 
 
@@ -30,15 +30,22 @@ class CustomGraphDataset(Dataset):
         self.dataset = []
         for p, g in zip(self.parts_lists, self.graphs):
             parts_tensor = torch.tensor([(part.get_part_id(), part.get_family_id()) for part in p])
-            #parts_tensor = one_hot(parts_tensor, 960)
-            adj_matr_tensor = torch.tensor(g.get_adjacency_matrix(part_order=p), dtype=torch.float32)
 
+            adj_matr_tensor = torch.tensor(g.get_adjacency_matrix(part_order=p), dtype=torch.float32)    
             self.dataset.append((parts_tensor, adj_matr_tensor))
 
     def __len__(self):
         return len(self.graphs)
 
-    def __getitem__(self, idx):       
-        return self.dataset[idx]
+    def __getitem__(self, idx): 
+        parts_tensor, adj_matr = self.dataset[idx]  
+        one_hot_encoded = one_hot(parts_tensor, MAX_SUPPORTED_PART_ID + 1)
+        one_hot_flattened = torch.flatten(one_hot_encoded, start_dim=1).float()
+
+        # create labels for each edge
+        num_nodes = adj_matr.size(dim=0)
+        indices = torch.triu_indices(num_nodes, num_nodes, offset=1)
+        labels = adj_matr[indices[0], indices[1]]
+        return one_hot_flattened, labels
 
 

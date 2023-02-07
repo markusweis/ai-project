@@ -16,7 +16,6 @@ from tqdm import tqdm
 from graph import Graph
 from node import Node
 from part import Part
-from prediction_models.gnn.link_predictor import LinkPredictor
 from prediction_models.base_prediction_model import BasePredictionModel
 from prediction_models.gnn.meta_parameters import *
 from prediction_models.gnn.dataset import CustomGraphDataset
@@ -35,9 +34,8 @@ class GNNPredictionModel(BasePredictionModel):
     """wraps the GNN Model and LinkPredictor for saving, training, ..."""
 
     def __init__(self):
-        self._embeddings_model: GNNModel = GNNModel(
-            MAX_NUMBER_OF_PARTS_PER_GRAPH,
-            (2, 3234),  # F
+        self._model: GNNModel = GNNModel(
+            (2 * (MAX_SUPPORTED_PART_ID + 1)),  # F
             EMBDEDDING_FEATURES,
             NUM_GNN_LAYERS,
             FC_FEATURES,
@@ -46,11 +44,11 @@ class GNNPredictionModel(BasePredictionModel):
         ).to(device)
         
         self._optimizer = torch.optim.Adam(
-            list(self._embeddings_model.parameters()) + 
-            list(self._link_predictor.parameters()) + 
-            list(self._embeddings.parameters()),
+            list(self._model.parameters()),
             lr=LEARNING_RATE, weight_decay=WD
         )
+
+        self._loss = nn.BCELoss()
     
     @classmethod
     def get_name(self) -> str:
@@ -97,43 +95,34 @@ class GNNPredictionModel(BasePredictionModel):
         :param parts: set of parts to form up a construction (i.e. graph)
         :return: graph
         """
+
+        #setup input 
         parts_list = list(parts)
-        # Sort the parts to reduce possible combinations
         parts_list.sort()
-
         parts_tensor = torch.tensor(
-            [[[part.get_part_id(), part.get_family_id()] for part in parts_list]], dtype=torch.float32)
+             [(part.get_part_id(), part.get_family_id()) for part in parts_list])
+        parts_tensor = torch.nn.functional.one_hot(parts_tensor, 
+            MAX_SUPPORTED_PART_ID + 1).float()
 
-        # Padding to achieve the same size for each input
-        missing_node_count = MAX_NUMBER_OF_PARTS_PER_GRAPH - len(parts_list)
-        if missing_node_count > 0:
-            parts_tensor = pad(
-                parts_tensor, (0, 0, 0, missing_node_count), "constant", -1)
+        self._model.eval()
+        with torch.no_grad():
+            prediction = self._model(torch.flatten(parts_tensor, start_dim=1))
 
-        self._embeddings_model.eval()
-        self._link_predictor.eval()
 
-        # TODO: implement
-
-        # with torch.no_grad():
-        #     X = parts_tensor.to(device)
-        #     pred = self._model(X)
-
-        # pred_thresh = torch.where(pred > 0, 1, 0)
-        # graph = Graph.from_adjacency_matrix(
-        #     part_list=parts_list, adjacency_matrix=pred_thresh)
-
-        # return graph
-
+        edge_list = edge_selection_strategy(prediction, len(parts_list))
         # Pseudo output:
         graph = Graph()
         parts_list = list(parts) 
-        for i in range(len(parts_list) - 1):
-            graph.add_undirected_edge(parts_list[i], parts_list[i+1])
+        for part in parts_list:
+            graph.__get_node_for_part
+        for edge in edge_list:
+            graph.add_undirected_edge(parts_list[edge[0]], parts_list[edge[1]])
     
         return graph
 
+
     
+
 
     @classmethod
     def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray):
@@ -143,62 +132,37 @@ class GNNPredictionModel(BasePredictionModel):
         """
         new_instance = cls()
         train_dataset = CustomGraphDataset(train_set)
-        train_dataloader = DataLoader(
-            train_dataset, batch_size=1, shuffle=True)
-
         val_dataset = CustomGraphDataset(val_set)
-        val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+
 
         print("Starting training...")
         epochs = 8
         mlflow.log_param("epochs", epochs)
         for t in range(epochs):
             print(f"Epoch {t+1}")
-            epoch_loss = new_instance._train(train_dataloader)
+            epoch_loss = new_instance._train(train_dataset)
 
             print(f"Epoch {t+1}: Mean loss: {epoch_loss}")
 
-            new_instance._embeddings_model.eval()
-            new_instance._link_predictor.eval()
 
             # loss on validation set
             loss = 0
-            for X, y in val_dataloader:
-                X, y = X.to(device), y.to(device)
-                curr_loss = new_instance._process_single_instance(parts_list=X, edge_index=y)
+            new_instance._model.eval()
+            for features, labels in val_dataset:
+                features, labels = features.to(device), labels.to(device)
+                curr_loss = new_instance._loss(new_instance._model(features), labels)
                 loss += curr_loss
             # is the normlaization correct?
-            normalized_val_loss = loss / (len(val_set) / 64)
+            normalized_val_loss = loss / (len(val_set))
             mlflow.log_metric("val_loss", normalized_val_loss,
                               (t + 1) * len(train_set))
             print(f"Validation loss: {normalized_val_loss}")
         return new_instance
 
-    def _process_single_instance(self, parts_list, edge_index):
-        # batch size of 1 makes 3 dims but emb_model expects 2
-        parts_list = parts_list[0]
-        edge_index = edge_index[0]
-
-        # Run message passing on the inital node embeddings to get updated embeddings
-        node_emb = self._embeddings_model(parts_list, edge_index)  # (N, d)
-
-        # Predict the class probabilities on the batch of positive edges using link_predictor
-        pos_edge = edge_index  # (2, E)
-        pos_pred = self._link_predictor(node_emb[pos_edge[0]], node_emb[pos_edge[1]])  # (E, )
-
-        # Sample negative edges (same as number of positive edges (if possible)) and predict class probabilities
-        # num_neg_samples= None -> same number as E 
-        neg_edge = negative_sampling(edge_index, num_nodes=self._embeddings.weight.shape[0],
-                                    num_neg_samples=None, method='dense')  # (2, E)
-
-                                                                            
-        neg_pred = self._link_predictor(node_emb[neg_edge[0]], node_emb[neg_edge[1]])  # (E, )
-
-        # Compute the corresponding negative log likelihood loss on the positive and negative edges
-        return -torch.log(pos_pred + 1e-15).mean() - torch.log(1 - neg_pred + 1e-15).mean()
+    
         
 
-    def _train(self, dataloader: CustomGraphDataset):
+    def _train(self, dataset: CustomGraphDataset):
         """
         Trains for a single epoch. 
         Runs offline training for model, link_predictor and node embeddings
@@ -211,17 +175,19 @@ class GNNPredictionModel(BasePredictionModel):
         :return: Average supervision loss over all positive (and correspondingly sampled negative) edges
         """
 
-        self._embeddings_model.train()
-        self._link_predictor.train()
+        self._model.train()
 
         train_losses = []
         
-        progress_bar = tqdm(dataloader) # Wraps progress bar around an interable 
+        progress_bar = tqdm(dataset) # Wraps progress bar around an interable 
 
-        for parts_list, edge_index in dataloader:
+        for features, labels in progress_bar:
+            features, labels = features.to(device), labels.to(device)
             self._optimizer.zero_grad()
 
-            loss = self._process_single_instance(parts_list=parts_list, edge_index=edge_index)
+            preds = self._model(features)
+            loss = self._loss(preds, labels)
+
             loss.backward()
             self._optimizer.step()
 
@@ -233,3 +199,25 @@ class GNNPredictionModel(BasePredictionModel):
             progress_bar.update()
 
         return sum(train_losses) / len(train_losses)
+
+    def log_pytorch_models_to_mlflow(self):
+        """
+        Logs the model or models to mlflow
+        """
+        # Log the model to mlflow
+        mlflow.pytorch.log_model(
+            self.model,
+            self.get_name()
+        )
+
+def edge_selection_strategy(preds, num_nodes):
+    """
+        for a flatt array of predictions, returns a list of edges (E, 2)
+        Select n highest scoreing edges 
+    """
+    selected_edges_in_flat_array = torch.topk(preds, num_nodes).indices
+    all_edge_indices = torch.triu_indices(num_nodes, num_nodes, 1)
+    transposed = all_edge_indices.t()
+
+    selected_edges = transposed[selected_edges_in_flat_array]
+    return selected_edges.t()
