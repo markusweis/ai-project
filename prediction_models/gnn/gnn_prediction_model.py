@@ -22,7 +22,7 @@ from prediction_models.gnn.meta_parameters import *
 from prediction_models.gnn.dataset import CustomGraphDataset
 from torch_geometric.utils import negative_sampling
 from prediction_models.gnn import meta_parameters
-from prediction_models.gnn.gnn_stack import GNNStack
+from prediction_models.gnn.gnn_module import GNNModel
 
 
 
@@ -35,23 +35,16 @@ class GNNPredictionModel(BasePredictionModel):
     """wraps the GNN Model and LinkPredictor for saving, training, ..."""
 
     def __init__(self):
-        self._embeddings_model: GNNStack = GNNStack(
-            2,  # F
-            HIDDEN_DIMS,
-            HIDDEN_DIMS, 
-            NUM_LAYERS,
-            meta_parameters.DROPOUT
-        ).to(device)
-        self._link_predictor: LinkPredictor = LinkPredictor(
-            HIDDEN_DIMS,  # TODO: seperate constants; don't have to be same
-            HIDDEN_DIMS,  
-            NUM_LAYERS,
-            meta_parameters.DROPOUT
-        ).to(device)
-        self._embeddings: nn.Embedding = nn.Embedding(
+        self._embeddings_model: GNNModel = GNNModel(
             MAX_NUMBER_OF_PARTS_PER_GRAPH,
-            EMBDEDDING_DIMS ).to(device) 
-
+            (2, 3234),  # F
+            EMBDEDDING_FEATURES,
+            NUM_GNN_LAYERS,
+            FC_FEATURES,
+            NUM_FC_LAYERS,
+            DROPOUT
+        ).to(device)
+        
         self._optimizer = torch.optim.Adam(
             list(self._embeddings_model.parameters()) + 
             list(self._link_predictor.parameters()) + 
@@ -78,6 +71,25 @@ class GNNPredictionModel(BasePredictionModel):
             "LEARNING_RATE": meta_parameters.LEARNING_RATE,
             "DROPOUT": meta_parameters.DROPOUT
         }
+
+    @classmethod
+    def load_from_file(cls, file_path: str):
+        """
+        This method loads the prediction model from a file (needed for evaluating your model on the test set).
+        :param file_path: path to file
+        :return: the loaded prediction model
+        """
+        loaded_instance = cls()
+        loaded_instance._model.state_dict(torch.load(file_path))
+        return loaded_instance
+
+    def store_model(self, file_path: str):
+        """
+        This method stores the model to a file 
+        (needed for evaluating your model on the test set).
+        :param file_path: path to file
+        """
+        torch.save(self._model.state_dict(), file_path)
 
     def predict_graph(self, parts: Set[Part]) -> Graph:
         """
@@ -121,16 +133,7 @@ class GNNPredictionModel(BasePredictionModel):
     
         return graph
 
-    @classmethod
-    def load_from_file(cls, file_path: str):
-        """
-        This method loads the prediction model from a file (needed for evaluating your model on the test set).
-        :param file_path: path to file
-        :return: the loaded prediction model
-        """
-        loaded_instance = cls()
-        loaded_instance._model.state_dict(torch.load(file_path))
-        return loaded_instance
+    
 
     @classmethod
     def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray):
@@ -170,14 +173,6 @@ class GNNPredictionModel(BasePredictionModel):
                               (t + 1) * len(train_set))
             print(f"Validation loss: {normalized_val_loss}")
         return new_instance
-
-    def store_model(self, file_path: str):
-        """
-        This method stores the model to a file 
-        (needed for evaluating your model on the test set).
-        :param file_path: path to file
-        """
-        torch.save(self._model.state_dict(), file_path)
 
     def _process_single_instance(self, parts_list, edge_index):
         # batch size of 1 makes 3 dims but emb_model expects 2
