@@ -29,7 +29,8 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
     """
     def __init__(self):
         self.model: BaseNeuralNetworkModelDefinition = BaseNeuralNetworkModelDefinition().to(device)
-        self._loss_fn = nn.MSELoss()
+        # self._loss_fn = nn.MSELoss()
+        self._loss_fn = CustomLoss()
         self._optimizer = torch.optim.SGD(self.model.parameters(), lr=meta_parameters.LEARNING_RATE)
         print("Using model:")
         print(self.model)
