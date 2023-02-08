@@ -36,6 +36,7 @@ class GNNPredictionModel(BasePredictionModel):
     def __init__(self, path):
         self.path = path
         self.step = 0 
+        self.epoch = 1
         self._model: GNNModel = GNNModel(
             (2 * (MAX_SUPPORTED_PART_ID + 1)),  # F
             EMBDEDDING_FEATURES,
@@ -80,7 +81,9 @@ class GNNPredictionModel(BasePredictionModel):
         :return: the loaded prediction model
         """
         loaded_instance = cls(file_path)
-        loaded_instance._model.state_dict(torch.load(file_path))
+        loaded_instance._model.to(device)
+        checkpoint = torch.load(file_path)
+        loaded_instance._model.load_state_dict(checkpoint)
         return loaded_instance
 
     def store_model(self, file_path: str):
@@ -91,6 +94,15 @@ class GNNPredictionModel(BasePredictionModel):
         """
         torch.save(self._model.state_dict(), file_path)
 
+
+    def debug_predict_graph(self, graphs: List[Graph]):
+        ds = CustomGraphDataset(graphs)
+        for ((features, labels), graph) in zip(ds, graphs):
+            predicted_graph = self.predict_graph(graph.get_parts())
+            preds = self._model(features.to(device))
+
+            print("eh")
+
     def predict_graph(self, parts: Set[Part]) -> Graph:
         """
         Returns a graph containing all given parts. This method is called within the method `evaluate`.
@@ -100,21 +112,19 @@ class GNNPredictionModel(BasePredictionModel):
 
         #setup input 
         parts_list = list(parts)
-        parts_list.sort()
         parts_tensor = torch.tensor(
              [(part.get_part_id(), part.get_family_id()) for part in parts_list])
         parts_tensor = torch.nn.functional.one_hot(parts_tensor, 
-            MAX_SUPPORTED_PART_ID + 1).float()
-
+            MAX_SUPPORTED_PART_ID + 1).float().to(device)
+        parts_tensor = torch.flatten(parts_tensor, start_dim=1)
         self._model.eval()
         with torch.no_grad():
-            prediction = self._model(torch.flatten(parts_tensor, start_dim=1))
+            prediction = self._model(parts_tensor)
 
 
         edge_list = edge_selection_strategy(prediction, len(parts_list))
 
         graph = Graph()
-        parts_list = list(parts) 
         for part in parts_list:
             graph.add_node_without_edge(part)
         for edge in edge_list:
@@ -123,11 +133,15 @@ class GNNPredictionModel(BasePredictionModel):
         return graph
 
 
-    
+    def continue_training(self, train_set, val_set, epochs=1):
+        train_dataset = CustomGraphDataset(train_set)
+        val_dataset = CustomGraphDataset(val_set)
+        for t in range(epochs):
+            self.train_and_validate(train_dataset, val_dataset)
 
 
     @classmethod
-    def train_new_instance(cls, path,  train_set: np.ndarray, val_set: np.ndarray):
+    def train_new_instance(cls, path,  train_set: np.ndarray, val_set: np.ndarray, epochs=8):
         """
         This method trains the prediction model with the given graphs 
         :param train_graphs: List of graphs to train with        
@@ -136,36 +150,37 @@ class GNNPredictionModel(BasePredictionModel):
         train_dataset = CustomGraphDataset(train_set)
         val_dataset = CustomGraphDataset(val_set)
 
+        mlflow.log_params(new_instance.get_meta_params())
 
         print("Starting training...")
-        epochs = 8
         mlflow.log_param("epochs", epochs)
-        for t in range(epochs):
-            print(f"Epoch {t+1}")
-            epoch_loss = new_instance._train(train_dataset)
-
-            print(f"Epoch {t+1}: Mean loss: {epoch_loss}")
-
-
-            # loss on validation set
-            loss = 0
-            new_instance._model.eval()
-            for features, labels in val_dataset:
-                features, labels = features.to(device), labels.to(device)
-                curr_loss = new_instance._loss(new_instance._model(features), labels)
-                loss += curr_loss
-                new_instance.store_model(new_instance.path)
-            # is the normlaization correct?
-            normalized_val_loss = loss / (len(val_set))
-            mlflow.log_metric("val_loss", normalized_val_loss,
-                              (t + 1) * len(train_set))
-            print(f"Validation loss: {normalized_val_loss}")
+        for _ in range(epochs):
+            new_instance.train_and_validate(train_dataset, val_dataset)
         return new_instance
 
-    
-        
 
-    def _train(self, dataset: CustomGraphDataset, batchsize=20):
+    def train_and_validate(self, train_dataset, val_dataset):
+        print(f"Epoch {self.epoch}")
+        epoch_loss = self._train(train_dataset)
+
+        print(f"Epoch {self.epoch}: Mean loss: {epoch_loss}")
+        # loss on validation set
+        loss = 0
+        self._model.eval()
+        for features, labels in val_dataset:
+            features, labels = features.to(device), labels.to(device)
+            curr_loss = self._loss(self._model(features), labels)
+            loss += curr_loss
+        
+        self.store_model(self.path)
+
+        normalized_val_loss = loss / (len(val_dataset))
+        mlflow.log_metric("val_loss", normalized_val_loss,
+                            (self.epoch) * len(train_dataset))
+        print(f"Validation loss: {normalized_val_loss}")
+        self.epoch += 1
+
+    def _train(self, dataset: CustomGraphDataset, batchsize=40):
         """
         Trains for a single epoch. 
         Runs offline training for model, link_predictor and node embeddings
@@ -181,6 +196,7 @@ class GNNPredictionModel(BasePredictionModel):
         self._model.train()
 
         train_losses = []
+        loss = 0
         
         progress_bar = tqdm(dataset) # Wraps progress bar around an interable 
         self._optimizer.zero_grad()
@@ -192,14 +208,16 @@ class GNNPredictionModel(BasePredictionModel):
             loss += self._loss(preds, labels)
 
 
-            train_losses.append(loss.item())
+            
             # print(loss.item())
             if self.step % batchsize == 0:
                 loss.backward()
                 self._optimizer.step()
-                progress_bar.set_description(str(loss.item()))
+                progress_bar.set_description(str(loss.item()/batchsize))
                 progress_bar.update()
-                mlflow.log_metric("train_loss",str(loss.item()), self.step)
+                mlflow.log_metric("train_loss",str(loss.item()/ batchsize), self.step)
+                train_losses.append(loss.item()/batchsize)
+                
                 loss = 0 
                 self._optimizer.zero_grad()
 
@@ -215,18 +233,18 @@ class GNNPredictionModel(BasePredictionModel):
         """
         # Log the model to mlflow
         mlflow.pytorch.log_model(
-            self.model,
+            self._model,
             self.get_name()
         )
 
 def edge_selection_strategy(preds, num_nodes):
     """
         for a flatt array of predictions, returns a list of edges (E, 2)
-        Select n highest scoreing edges 
+        Select n highest scoring edges 
     """
-    selected_edges_in_flat_array = torch.topk(preds, num_nodes - 1).indices
+    selected_edges_in_flat_array = torch.topk(preds, num_nodes - 1).indices.to(device)
     all_edge_indices = torch.triu_indices(num_nodes, num_nodes, 1)
-    transposed = all_edge_indices.t()
+    transposed = all_edge_indices.t().to(device)
 
     selected_edges = transposed[selected_edges_in_flat_array]
     return selected_edges

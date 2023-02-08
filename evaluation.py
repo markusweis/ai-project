@@ -153,8 +153,10 @@ if __name__ == '__main__':
     print("Loading the model...")
     model_type = SELECTED_MODEL_TYPE if len(sys.argv) < 2 else sys.argv[1]
     model_file_path = SELECTED_MODEL_PATH if len(sys.argv) < 3 else sys.argv[2]
-    prediction_model: BasePredictionModel = load_model(
+    prediction_model = load_model(
         model_file_path, model_type=model_type)
+
+    #prediction_model.debug_predict_graph(dataset_retriever.get_evaluation_graphs()[:20])
 
     print("Evaluating the model...")
     eval_score = evaluate_edge_accuracy(prediction_model, dataset_retriever.get_test_graphs())

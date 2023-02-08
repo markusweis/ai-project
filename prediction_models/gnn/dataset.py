@@ -24,9 +24,6 @@ class CustomGraphDataset(Dataset):
         print("Preparing dataset...")
         self.graphs = graphs
         self.parts_lists = [list(graph.get_parts()) for graph in self.graphs]
-        # Sort the parts to reduce possible combinations
-        for parts_list in self.parts_lists:
-            parts_list.sort()
 
         self.dataset = []
         for p, g in zip(self.parts_lists, self.graphs):

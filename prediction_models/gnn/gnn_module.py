@@ -12,6 +12,7 @@ class GNNModel(torch.nn.Module):
     def __init__(self, input_dim, emb_features, num_gnn_layers, fc_features, num_fc_layers, dropout):
         super(GNNModel, self).__init__()
         conv_model = pyg.nn.DenseSAGEConv
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.convs = nn.ModuleList()
         self.convs.append(conv_model(input_dim, emb_features))
@@ -24,7 +25,7 @@ class GNNModel(torch.nn.Module):
 
         # post-message-passing
         self.lins = nn.ModuleList()
-        self.lins.append(nn.Linear(2271 * 2 * 2, fc_features))
+        self.lins.append(nn.Linear(2* emb_features, fc_features))
         for _ in range(num_fc_layers - 2):
             self.lins.append(nn.Linear(fc_features, fc_features))
         self.lins.append(nn.Linear(fc_features, 1))
@@ -34,21 +35,18 @@ class GNNModel(torch.nn.Module):
         """
             :param x: tensor of "two"-hot encoded node features (N, 2 * Max_part_id ) 
         """
-
-        # x = x.type(torch.float)
-        # edge_index = edge_index.type(torch.int64)
         
         # build fully connected graph
-        adj = torch.ones((x.size(dim=0)), x.size(dim=0))
+        adj = torch.ones((x.size(dim=0)), x.size(dim=0)).to(self.device)
         # gnn pass
-        #for i in range(self.num_layers):
-        #    x = self.convs[i](x, adj)
-        #    x = F.relu(x)
-        #    x = F.dropout(x, p=self.dropout, training=self.training)
+        for i in range(self.num_layers):
+            x = self.convs[i](x, adj)
+            x = F.relu(x)
+            x = F.dropout(x, p=self.dropout, training=self.training)
 
         
         # Take embeddings and for every edge pass FC layers 
-        #x = torch.squeeze(x) # remove first (batch) dim
+        x = torch.squeeze(x) # remove first (batch) dim
         adj = torch.triu(adj, diagonal=1)
         edge_index = adj.nonzero().t().contiguous()
 
