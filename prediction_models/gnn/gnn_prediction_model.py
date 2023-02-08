@@ -33,7 +33,8 @@ print(f"Using {device} device")
 class GNNPredictionModel(BasePredictionModel):
     """wraps the GNN Model and LinkPredictor for saving, training, ..."""
 
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
         self._model: GNNModel = GNNModel(
             (2 * (MAX_SUPPORTED_PART_ID + 1)),  # F
             EMBDEDDING_FEATURES,
@@ -114,7 +115,7 @@ class GNNPredictionModel(BasePredictionModel):
         graph = Graph()
         parts_list = list(parts) 
         for part in parts_list:
-            graph.__get_node_for_part
+            graph.add_node_without_edge(part)
         for edge in edge_list:
             graph.add_undirected_edge(parts_list[edge[0]], parts_list[edge[1]])
     
@@ -125,12 +126,12 @@ class GNNPredictionModel(BasePredictionModel):
 
 
     @classmethod
-    def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray):
+    def train_new_instance(cls, path,  train_set: np.ndarray, val_set: np.ndarray):
         """
         This method trains the prediction model with the given graphs 
         :param train_graphs: List of graphs to train with        
         """
-        new_instance = cls()
+        new_instance = cls(path)
         train_dataset = CustomGraphDataset(train_set)
         val_dataset = CustomGraphDataset(val_set)
 
@@ -152,6 +153,7 @@ class GNNPredictionModel(BasePredictionModel):
                 features, labels = features.to(device), labels.to(device)
                 curr_loss = new_instance._loss(new_instance._model(features), labels)
                 loss += curr_loss
+                new_instance.store_model(new_instance.path)
             # is the normlaization correct?
             normalized_val_loss = loss / (len(val_set))
             mlflow.log_metric("val_loss", normalized_val_loss,

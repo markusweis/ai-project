@@ -50,7 +50,8 @@ if __name__ == '__main__':
     with mlflow.start_run(run_name=model_class.get_name()):
         # Train the new model:
         new_model_instance = model_class.train_new_instance(
-                train_set=dataset_retriever.get_training_graphs()[:100],  #TODO: remove 
+                SELECTED_MODEL_PATH,
+                train_set=dataset_retriever.get_training_graphs()[:1000],
                 val_set=dataset_retriever.get_evaluation_graphs())
         
         # Evaluate the final edge accuracies on both the original training data and the evaluation data
@@ -58,15 +59,15 @@ if __name__ == '__main__':
         # edge_acc_training = evaluate_edge_accuracy(new_model_instance, dataset_retriever.get_training_graphs())
         # print(f"Evaluation edge accuracy score on the training dataset: {edge_acc_training}")
         # -> Removed due to some graphs being to large for the given edge accuracy calculations!
+
+        # Store the model without mlflow, if path is given
         if model_file_path is not None and model_file_path != "":
             new_model_instance.store_model(model_file_path)
-
 
         print("Calculating edge accuracy on evaluation data:")
         edge_acc_evaluation = evaluate_edge_accuracy(new_model_instance, dataset_retriever.get_evaluation_graphs())
         print(f"Evaluation edge accuracy score on the evaluation dataset: {edge_acc_evaluation}")
 
-        # Store the model without mlflow, if path is given
         
         # Log parameters and metrics
         mlflow.log_params(new_model_instance.get_meta_params())
