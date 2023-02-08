@@ -11,6 +11,7 @@ from graph import Graph
 from part import Part
 from prediction_models.base_neural_network.base_graph_dataset import GraphDataset
 from prediction_models.base_neural_network.base_neural_network_model_definition import BaseNeuralNetworkModelDefinition
+from prediction_models.base_neural_network.custom_loss_function import CustomLoss
 from prediction_models.base_prediction_model import BasePredictionModel
 import mlflow
 from prediction_models.base_neural_network import meta_parameters
@@ -177,8 +178,16 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         
         print("Starting training...")
         mlflow.log_param("epochs", meta_parameters.LEARNING_EPOCHS)
-        for t in range(meta_parameters.LEARNING_EPOCHS):
+        # Start with a loss greater then any expected one to enable comparisons
+        prev_normalized_val_loss = 10**6
+        normalized_val_loss = 10**6 - 1
+        t = 0
+        # As many epochs, as specified, or as long as the loss on validation data decreases
+        while (((meta_parameters.LEARNING_EPOCHS == 0)  
+                    and normalized_val_loss < prev_normalized_val_loss) or 
+                t < meta_parameters.LEARNING_EPOCHS):
             print(f"Epoch {t+1}")
+            prev_normalized_val_loss = normalized_val_loss
             new_instance._train(dataloader=train_dataloader)
 
             # loss on validation set
@@ -187,9 +196,10 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
                 X, y = X.to(device), y.to(device)
                 pred = new_instance.model(X)
                 loss += new_instance._loss_fn(pred, y)
-            normalized_val_loss = loss / (len(val_set) / BATCH_SIZE) # is the normlaization correct? 
+            normalized_val_loss = loss / (len(val_set) / BATCH_SIZE) 
             mlflow.log_metric("val_loss", normalized_val_loss, (t + 1) * len(train_set) )
             print(f"Validation loss: {normalized_val_loss}")    
+            t += 1
         return new_instance
 
 
@@ -206,10 +216,12 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         progress_bar = tqdm(dataloader) # Wraps progress bar around an interable 
         for (X, y) in progress_bar:
             X, y = X.to(device), y.to(device)
+            y = y.type(torch.float32)
 
             # Compute prediction error
             pred = self.model(X)
             loss = self._loss_fn(pred, y)
+
             mlflow.log_metric("train_loss", loss)
 
             # Backpropagation

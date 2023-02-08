@@ -339,7 +339,7 @@ Main finding: MSE seems to perform a little better than L1Loss
 
 [git commit](https://github.com/markusweis/ai-project/tree/90dacd4b5526645d525f0e2a6b8568b2242e116a)
 
-**Edge Accuracy – Evaluation dataset:** 
+**Edge Accuracy – Evaluation dataset:** 81.15
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
@@ -351,33 +351,69 @@ Main finding: MSE seems to perform a little better than L1Loss
 - MAX_SUPPORTED_PART_ID = 2270
 - MAX_SUPPORTED_FAMILY_ID = 100
 
-#### 1.6.5 
+#### 1.6.5 Larger hidden layer
+In this experiment, a way larger hidden layer was used, that is closer to the size of the input dimensionality.
 
-Main finding: 
+Main finding: Way more computation power required, without any benefit in resulting edge accuracy.
 
-[MLflow experiment]()
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/b39ed3fc57514c3190c1e7db4980e97d)
+
+[git commit](https://github.com/markusweis/ai-project/tree/dbb772b073abe7c97c8a100996eb285f5a134a60)
+
+**Edge Accuracy – Evaluation dataset:** 81.17
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 1
+- HIDDEN_LAYERS_SIZE = 5000
+- LEARNING_RATE = 0.05
+- LEARNING_EPOCHS = 5
+- UNUSED_NODES_PADDING_VALUE = 0.8
+- MAX_SUPPORTED_PART_ID = 2270
+- MAX_SUPPORTED_FAMILY_ID = 100
+
+#### 1.6.6 More layers
+In this experiment, 10 hidden layers were used instead of just one. The size per layer was reduced back to 435, which matches the output size.
+
+Main finding: Increasing the complexity of the model does not increase the performance significantly. The loss also still decreases quite fast in the second training epoch.
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/1845c2c4d3d74e2c934e97f70ca04be3)
 
 [git commit]()
 
-**Edge Accuracy – Evaluation dataset:** 
+**Edge Accuracy – Evaluation dataset:** 81.22
 
 **Meta-parameters:**
 - MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
-- NUM_HIDDEN_LAYERS = 1
-- HIDDEN_LAYERS_SIZE = 512
-- LEARNING_RATE = 0.05
-- LEARNING_EPOCHS = 5
+- NUM_HIDDEN_LAYERS = 10
+- HIDDEN_LAYERS_SIZE = 435  # Like the output size
+- LEARNING_RATE = 0.1
+- LEARNING_EPOCHS =  5 # was unbounded -> stopped when the loss on validation data did not increase anymore
 - UNUSED_NODES_PADDING_VALUE = 0.8
 - MAX_SUPPORTED_PART_ID = 2270
 - MAX_SUPPORTED_FAMILY_ID = 100
 
-----------
-Open ideas for further experiments (fully-connected):
-- One-hot encoding
-- Padding with -1 or 0
-- Random instead of sorting
-- Sigmoid instead of InstanceNorm1d / removing InstanceNorm1d without any replacement?
-- check for overfitting: edge accuracy on (a little and working subset of) the training set
+#### 1.6.7 Faster training
+In this experiment, the learning rate was increased from 0.1 to 1.0
+
+Main finding: Increasing the learning rate allows for an even much faster training with about the same result.
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/fa48afc72b5e436aabb0015d94de192b)
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 81.22
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 10
+- HIDDEN_LAYERS_SIZE = 435  # Like the output size
+- LEARNING_RATE = 1
+- LEARNING_EPOCHS =  2 # was unbounded -> stopped when the loss on validation data did not increase anymore
+- UNUSED_NODES_PADDING_VALUE = 0.8
+- MAX_SUPPORTED_PART_ID = 2270
+- MAX_SUPPORTED_FAMILY_ID = 100
+
 
 ## 2. Graph-convolutional Neural Network
 
