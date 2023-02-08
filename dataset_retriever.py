@@ -1,12 +1,15 @@
 import numpy as np
 import pickle
 
+from graph import Graph
+
 RANDOM_SEED = 315
 # Val and Test sizes decreased on purpose in comparison to the ususal 15 - 20 %
 # Reason is the non-performant permutations calculation
 VAL_SIZE_RATIO = 0.05
 TEST_SIZE_RATIO = 0.05
 
+ONLY_SPECIFIC_NODE_AMOUNT = None
 
 class DatasetRetriever:
     """
@@ -29,12 +32,19 @@ class DatasetRetriever:
 
         print("Loading datasets...")
         with open('data/graphs.dat', 'rb') as file:
-            self.all_graphs = np.asarray(pickle.load(file))
+            all_graphs = pickle.load(file)
+
+        if ONLY_SPECIFIC_NODE_AMOUNT is not None:
+            pass
+            graph: Graph
+            all_graphs = [graph for graph in all_graphs if len(graph.get_nodes()) == ONLY_SPECIFIC_NODE_AMOUNT]
+
+        self.all_graphs_array = np.asarray(all_graphs)
 
         print("Splitting training, evaluation and test-sets...")
         # train, validation and test split
         np.random.seed(42)
-        self._idxs = np.arange(len(self.all_graphs))
+        self._idxs = np.arange(len(self.all_graphs_array))
         self._idxs = np.random.permutation(self._idxs)
 
         self._val_size = int(len(self._idxs) * VAL_SIZE_RATIO)
@@ -48,16 +58,16 @@ class DatasetRetriever:
         """
         Loads all training subset of graphs
         """
-        return self.all_graphs[self._idxs[self._test_size + self._val_size:]]
+        return self.all_graphs_array[self._idxs[self._test_size + self._val_size:]]
 
     def get_evaluation_graphs(self) -> np.array:
         """
         Loads all evaluation subset of graphs
         """
-        return self.all_graphs[self._idxs[self._test_size:self._test_size + self._val_size]]
+        return self.all_graphs_array[self._idxs[self._test_size:self._test_size + self._val_size]]
 
     def get_test_graphs(self) -> np.array:
         """
         Loads all testing subset of graphs
         """
-        return self.all_graphs[self._idxs[:self._test_size]]
+        return self.all_graphs_array[self._idxs[:self._test_size]]

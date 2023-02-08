@@ -54,7 +54,6 @@ def evaluate(model: BasePredictionModel, data_set: List[Tuple[Set[Part], Graph]]
     progress_bar = tqdm(data_set) # Wraps progress bar around an interable 
     for input_parts, target_graph in progress_bar:
         predicted_graph = model.predict_graph(input_parts)
-
         edges_counter += len(input_parts) * len(input_parts)
         sum_correct_edges += edge_accuracy(predicted_graph, target_graph)
 
