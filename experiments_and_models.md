@@ -421,7 +421,7 @@ Main finding: Worse than without this additional focus -> Idea dropped.
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/97c8cb3cf07c4a9dbf5b7523427e08eb)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/00a5febb4f41e87b1a3acdc33ac7695f6eb6dbe2)
 
 **Edge Accuracy – Evaluation dataset:** 72.62
 

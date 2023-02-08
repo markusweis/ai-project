@@ -11,3 +11,6 @@ DROPOUT=0.2
 
 MAX_SUPPORTED_PART_ID = 2270
 MAX_SUPPORTED_FAMILY_ID = 100
+
+# Learning epochs: 0 means to train as long as the loss on validation data decreases
+LEARNING_EPOCHS = 0

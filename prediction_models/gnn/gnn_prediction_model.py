@@ -78,7 +78,7 @@ class GNNPredictionModel(BasePredictionModel):
         :param file_path: path to file
         :return: the loaded prediction model
         """
-        loaded_instance = cls(file_path)
+        loaded_instance = cls()
         loaded_instance._model.to(device)
         checkpoint = torch.load(file_path)
         loaded_instance._model.load_state_dict(checkpoint)
@@ -139,7 +139,7 @@ class GNNPredictionModel(BasePredictionModel):
 
 
     @classmethod
-    def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray, epochs=8):
+    def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray):
         """
         This method trains the prediction model with the given graphs 
         :param train_graphs: List of graphs to train with        
@@ -151,13 +151,21 @@ class GNNPredictionModel(BasePredictionModel):
         mlflow.log_params(new_instance.get_meta_params())
 
         print("Starting training...")
-        mlflow.log_param("epochs", epochs)
-        for _ in range(epochs):
-            new_instance.train_and_validate(train_dataset, val_dataset)
+
+        # Start with a loss greater then any expected one to enable comparisons
+        prev_normalized_val_loss = 10**6
+        normalized_val_loss = 10**6 - 1
+        # As many epochs, as specified, or as long as the loss on validation data decreases
+        while (((meta_parameters.LEARNING_EPOCHS == 0)  
+                    and normalized_val_loss < prev_normalized_val_loss) or 
+                new_instance.epoch <= meta_parameters.LEARNING_EPOCHS):
+            prev_normalized_val_loss = normalized_val_loss
+            normalized_val_loss = new_instance.train_and_validate(train_dataset, val_dataset)
+        mlflow.log_metric("training_epochs", new_instance.epoch - 1)
         return new_instance
 
 
-    def train_and_validate(self, train_dataset, val_dataset):
+    def train_and_validate(self, train_dataset, val_dataset) -> float:
         print(f"Epoch {self.epoch}")
         epoch_loss = self._train(train_dataset)
 
@@ -178,6 +186,7 @@ class GNNPredictionModel(BasePredictionModel):
                             (self.epoch) * len(train_dataset))
         print(f"Validation loss: {normalized_val_loss}")
         self.epoch += 1
+        return normalized_val_loss
 
     def _train(self, dataset: CustomGraphDataset, batchsize=40):
         """
