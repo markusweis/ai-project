@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/ea290e7d35d64cafa35ade52faf6afbe/artifacts
+end_time: 1675784090725
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ea290e7d35d64cafa35ade52faf6afbe
+run_name: gnn_model
+run_uuid: ea290e7d35d64cafa35ade52faf6afbe
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675784079241
+status: 4
+tags: []
+user_id: Markus
