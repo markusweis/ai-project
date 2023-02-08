@@ -66,7 +66,6 @@ class GNNPredictionModel(BasePredictionModel):
         :return: Dict containing all used meta parameters
         """
         return {
-            "MAX_NUMBER_OF_PARTS_PER_GRAPH": meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH,
             "EMBDEDDING_DIMS": meta_parameters.EMBDEDDING_FEATURES,
             "HIDDEN_LAYERS_SIZE": meta_parameters.FC_FEATURES,
             "LEARNING_RATE": meta_parameters.LEARNING_RATE,
