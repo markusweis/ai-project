@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Set
 from graph import Graph
 from part import Part
+import numpy as np
 
 class BasePredictionModel(ABC):
     """
@@ -52,7 +53,7 @@ class BasePredictionModel(ABC):
     
     @classmethod
     @abstractmethod
-    def train_new_instance(cls, train_graphs: List[Graph]):
+    def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray):
         """
         This method trains the prediction model with the given graphs 
         :param train_graphs: List of graphs to train with        

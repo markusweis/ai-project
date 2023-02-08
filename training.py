@@ -17,11 +17,14 @@ from evaluation import evaluate_edge_accuracy, load_model
 
 # SELECTED_MODEL_PATH = None  # Not needed anymore thanks to mlflow. Can still be used, though.
 
+SELECTED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
+SELECTED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
+
 # SELECTED_MODEL_TYPE = PredictionModels.GGN.value
 # SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN.pth"
 
-SELECTED_MODEL_TYPE = PredictionModels.GNN.value
-SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN1.pth"
+# SELECTED_MODEL_TYPE = PredictionModels.GNN.value
+# SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN1.pth"
 
 
 CONTINUE_TRAINING = False
@@ -55,10 +58,8 @@ if __name__ == '__main__':
         if not CONTINUE_TRAINING:
             # Train the new model:
             new_model_instance = model_class.train_new_instance(
-                    SELECTED_MODEL_PATH,
                     train_set=dataset_retriever.get_training_graphs(), 
-                    val_set=dataset_retriever.get_evaluation_graphs(),
-                    epochs=8)
+                    val_set=dataset_retriever.get_evaluation_graphs())
         
         else: 
             print("Loading the model and continueing training ...")

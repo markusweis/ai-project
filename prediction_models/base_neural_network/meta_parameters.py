@@ -4,6 +4,6 @@ HIDDEN_LAYERS_SIZE = 435  # Like the output size
 LEARNING_RATE = 0.2
 # Learning epochs: 0 means to train as long as the loss on validation data decreases
 LEARNING_EPOCHS = 0
-UNUSED_NODES_PADDING_VALUE = 0.8
+UNUSED_NODES_PADDING_VALUE = -1
 MAX_SUPPORTED_PART_ID = 2270
 MAX_SUPPORTED_FAMILY_ID = 100

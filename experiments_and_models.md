@@ -379,7 +379,7 @@ Main finding: Increasing the complexity of the model does not increase the perfo
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/1845c2c4d3d74e2c934e97f70ca04be3)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/818f09de24962f58ce3b38c428f5f690b7a92b3a)
 
 **Edge Accuracy – Evaluation dataset:** 81.22
 
@@ -400,7 +400,7 @@ Main finding: Increasing the learning rate allows for an even much faster traini
 
 [MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/fa48afc72b5e436aabb0015d94de192b)
 
-[git commit]()
+[git commit](https://github.com/markusweis/ai-project/tree/818f09de24962f58ce3b38c428f5f690b7a92b3a)
 
 **Edge Accuracy – Evaluation dataset:** 81.22
 
@@ -411,6 +411,27 @@ Main finding: Increasing the learning rate allows for an even much faster traini
 - LEARNING_RATE = 1
 - LEARNING_EPOCHS =  2 # was unbounded -> stopped when the loss on validation data did not increase anymore
 - UNUSED_NODES_PADDING_VALUE = 0.8
+- MAX_SUPPORTED_PART_ID = 2270
+- MAX_SUPPORTED_FAMILY_ID = 100
+
+#### 1.6.8 Custom loss function
+In this experiment, a new, custom loss function was introduced. Instead of calculating the loss based on the whole prediction including the padding space, this version ignores values in the padding and only focuses on the actual edges.
+
+Main finding: Worse than without this additional focus -> Idea dropped.
+
+[MLflow experiment](http://127.0.0.1:5000/#/experiments/0/runs/97c8cb3cf07c4a9dbf5b7523427e08eb)
+
+[git commit]()
+
+**Edge Accuracy – Evaluation dataset:** 72.62
+
+**Meta-parameters:**
+- MAX_NUMBER_OF_PARTS_PER_GRAPH = 30
+- NUM_HIDDEN_LAYERS = 10
+- HIDDEN_LAYERS_SIZE = 435  # Like the output size
+- LEARNING_RATE = 0.2
+- LEARNING_EPOCHS =  2 # was unbounded -> stopped when the loss on validation data did not increase anymore
+- UNUSED_NODES_PADDING_VALUE = -1
 - MAX_SUPPORTED_PART_ID = 2270
 - MAX_SUPPORTED_FAMILY_ID = 100
 

@@ -23,7 +23,7 @@ from torch_geometric.utils import negative_sampling
 from prediction_models.gnn import meta_parameters
 from prediction_models.gnn.gnn_module import GNNModel
 
-
+INTERMEDIATE_MODEL_STORE_PATH = "prediction_models/model_instances/GNN1.pth"
 
 # Get cpu or gpu device for training.
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -33,8 +33,7 @@ print(f"Using {device} device")
 class GNNPredictionModel(BasePredictionModel):
     """wraps the GNN Model and LinkPredictor for saving, training, ..."""
 
-    def __init__(self, path):
-        self.path = path
+    def __init__(self):
         self.step = 0 
         self.epoch = 1
         self._model: GNNModel = GNNModel(
@@ -140,12 +139,12 @@ class GNNPredictionModel(BasePredictionModel):
 
 
     @classmethod
-    def train_new_instance(cls, path,  train_set: np.ndarray, val_set: np.ndarray, epochs=8):
+    def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray, epochs=8):
         """
         This method trains the prediction model with the given graphs 
         :param train_graphs: List of graphs to train with        
         """
-        new_instance = cls(path)
+        new_instance = cls()
         train_dataset = CustomGraphDataset(train_set)
         val_dataset = CustomGraphDataset(val_set)
 
@@ -171,7 +170,8 @@ class GNNPredictionModel(BasePredictionModel):
             curr_loss = self._loss(self._model(features), labels)
             loss += curr_loss
         
-        self.store_model(self.path)
+        if INTERMEDIATE_MODEL_STORE_PATH is not None:
+            self.store_model(INTERMEDIATE_MODEL_STORE_PATH)
 
         normalized_val_loss = loss / (len(val_dataset))
         mlflow.log_metric("val_loss", normalized_val_loss,
