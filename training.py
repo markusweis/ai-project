@@ -17,15 +17,11 @@ from evaluation import evaluate_edge_accuracy, load_model
 
 # SELECTED_MODEL_PATH = None  # Not needed anymore thanks to mlflow. Can still be used, though.
 
-SELECTED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
-SELECTED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
+# SELECTED_MODEL_TYPE = PredictionModels.NEURAL_NETWORK_PREDICTION_MODEL.value
+# SELECTED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
 
-# SELECTED_MODEL_TYPE = PredictionModels.GGN.value
-# SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN.pth"
-
-# SELECTED_MODEL_TYPE = PredictionModels.GNN.value
-# SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN1.pth"
-
+SELECTED_MODEL_TYPE = PredictionModels.GNN.value
+SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN.pth"
 
 CONTINUE_TRAINING = False
 
