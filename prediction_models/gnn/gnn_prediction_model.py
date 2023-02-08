@@ -35,6 +35,7 @@ class GNNPredictionModel(BasePredictionModel):
 
     def __init__(self, path):
         self.path = path
+        self.step = 0 
         self._model: GNNModel = GNNModel(
             (2 * (MAX_SUPPORTED_PART_ID + 1)),  # F
             EMBDEDDING_FEATURES,
@@ -65,8 +66,8 @@ class GNNPredictionModel(BasePredictionModel):
         """
         return {
             "MAX_NUMBER_OF_PARTS_PER_GRAPH": meta_parameters.MAX_NUMBER_OF_PARTS_PER_GRAPH,
-            "EMBDEDDING_DIMS": meta_parameters.EMBDEDDING_DIMS,
-            "HIDDEN_LAYERS_SIZE": meta_parameters.HIDDEN_LAYERS_SIZE,
+            "EMBDEDDING_DIMS": meta_parameters.EMBDEDDING_FEATURES,
+            "HIDDEN_LAYERS_SIZE": meta_parameters.FC_FEATURES,
             "LEARNING_RATE": meta_parameters.LEARNING_RATE,
             "DROPOUT": meta_parameters.DROPOUT
         }
@@ -78,7 +79,7 @@ class GNNPredictionModel(BasePredictionModel):
         :param file_path: path to file
         :return: the loaded prediction model
         """
-        loaded_instance = cls()
+        loaded_instance = cls(file_path)
         loaded_instance._model.state_dict(torch.load(file_path))
         return loaded_instance
 
@@ -111,7 +112,7 @@ class GNNPredictionModel(BasePredictionModel):
 
 
         edge_list = edge_selection_strategy(prediction, len(parts_list))
-        # Pseudo output:
+
         graph = Graph()
         parts_list = list(parts) 
         for part in parts_list:
@@ -164,7 +165,7 @@ class GNNPredictionModel(BasePredictionModel):
     
         
 
-    def _train(self, dataset: CustomGraphDataset):
+    def _train(self, dataset: CustomGraphDataset, batchsize=20):
         """
         Trains for a single epoch. 
         Runs offline training for model, link_predictor and node embeddings
@@ -182,23 +183,29 @@ class GNNPredictionModel(BasePredictionModel):
         train_losses = []
         
         progress_bar = tqdm(dataset) # Wraps progress bar around an interable 
-
+        self._optimizer.zero_grad()
         for features, labels in progress_bar:
             features, labels = features.to(device), labels.to(device)
             self._optimizer.zero_grad()
 
             preds = self._model(features)
-            loss = self._loss(preds, labels)
+            loss += self._loss(preds, labels)
 
-            loss.backward()
-            self._optimizer.step()
 
             train_losses.append(loss.item())
-            mlflow.log_metric("train_loss",str(loss.item()))
             # print(loss.item())
+            if self.step % batchsize == 0:
+                loss.backward()
+                self._optimizer.step()
+                progress_bar.set_description(str(loss.item()))
+                progress_bar.update()
+                mlflow.log_metric("train_loss",str(loss.item()), self.step)
+                loss = 0 
+                self._optimizer.zero_grad()
 
-            progress_bar.set_description(str(loss.item()))
-            progress_bar.update()
+
+            self.step += 1 
+            
 
         return sum(train_losses) / len(train_losses)
 
@@ -217,9 +224,9 @@ def edge_selection_strategy(preds, num_nodes):
         for a flatt array of predictions, returns a list of edges (E, 2)
         Select n highest scoreing edges 
     """
-    selected_edges_in_flat_array = torch.topk(preds, num_nodes).indices
+    selected_edges_in_flat_array = torch.topk(preds, num_nodes - 1).indices
     all_edge_indices = torch.triu_indices(num_nodes, num_nodes, 1)
     transposed = all_edge_indices.t()
 
     selected_edges = transposed[selected_edges_in_flat_array]
-    return selected_edges.t()
+    return selected_edges

@@ -34,7 +34,7 @@ if __name__ == '__main__':
     Trains a model of the type SELECTED_MODEL_TYPE / argument 1 and logs it to mlflow.
     If either SELECTED_MODEL_PATH or argument 2 is not empty, the model will be stored there, too.
     """
-    # make tensor output more readable 
+    # make tensor output more readab+le 
     lt.monkey_patch()
     # Load data
     dataset_retriever = DatasetRetriever.instance()
@@ -51,7 +51,7 @@ if __name__ == '__main__':
         # Train the new model:
         new_model_instance = model_class.train_new_instance(
                 SELECTED_MODEL_PATH,
-                train_set=dataset_retriever.get_training_graphs()[:1000],
+                train_set=dataset_retriever.get_training_graphs(),
                 val_set=dataset_retriever.get_evaluation_graphs())
         
         # Evaluate the final edge accuracies on both the original training data and the evaluation data
@@ -60,9 +60,6 @@ if __name__ == '__main__':
         # print(f"Evaluation edge accuracy score on the training dataset: {edge_acc_training}")
         # -> Removed due to some graphs being to large for the given edge accuracy calculations!
 
-        # Store the model without mlflow, if path is given
-        if model_file_path is not None and model_file_path != "":
-            new_model_instance.store_model(model_file_path)
 
         print("Calculating edge accuracy on evaluation data:")
         edge_acc_evaluation = evaluate_edge_accuracy(new_model_instance, dataset_retriever.get_evaluation_graphs())

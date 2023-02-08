@@ -14,6 +14,7 @@ from typing import Dict, List, Set, Tuple
 import sys
 from dataset_retriever import DatasetRetriever
 from tqdm import tqdm
+import lovely_tensors as lt
 
 import mlflow
 from graph import Graph
@@ -27,9 +28,9 @@ from prediction_models.prediction_models_enum import PredictionModels, get_model
 
 
 SELECTED_MODEL_TYPE = PredictionModels.GNN.value
-SELECTED_MODEL_PATH = "prediction_models/model_instances/gnn.pth"
+SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN.pth"
 
-def load_model(file_path: str, model_type: str = SELECTED_MODEL_TYPE) -> BasePredictionModel:
+def load_model(file_path: str, model_type: str = SELECTED_MODEL_TYPE):
     """
         This method loads the prediction model from a file (needed for evaluating your model on the test set).
         :param file_path: path to file
@@ -54,6 +55,9 @@ def evaluate(model: BasePredictionModel, data_set: List[Tuple[Set[Part], Graph]]
     progress_bar = tqdm(data_set) # Wraps progress bar around an interable 
     for input_parts, target_graph in progress_bar:
         predicted_graph = model.predict_graph(input_parts)
+
+        #target_graph.draw()
+        #predicted_graph.draw()
 
         edges_counter += len(input_parts) * len(input_parts)
         sum_correct_edges += edge_accuracy(predicted_graph, target_graph)
@@ -140,6 +144,8 @@ if __name__ == '__main__':
     Loads the model at SELECTED_MODEL_PATH / argument 2 of type SELECTED_MODEL_TYPE / argument 1.
     Calculates the edge accuracy for the test dataset.
     """
+    lt.monkey_patch()
+
     # Load data
     dataset_retriever = DatasetRetriever.instance()
 

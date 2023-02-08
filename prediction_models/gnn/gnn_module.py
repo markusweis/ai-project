@@ -24,7 +24,7 @@ class GNNModel(torch.nn.Module):
 
         # post-message-passing
         self.lins = nn.ModuleList()
-        self.lins.append(nn.Linear(emb_features, fc_features))
+        self.lins.append(nn.Linear(2271 * 2 * 2, fc_features))
         for _ in range(num_fc_layers - 2):
             self.lins.append(nn.Linear(fc_features, fc_features))
         self.lins.append(nn.Linear(fc_features, 1))
@@ -32,7 +32,7 @@ class GNNModel(torch.nn.Module):
 
     def forward(self, x: torch.tensor):
         """
-            :param x: tensor of one-hot encoded node features (N, 2) 
+            :param x: tensor of "two"-hot encoded node features (N, 2 * Max_part_id ) 
         """
 
         # x = x.type(torch.float)
@@ -40,21 +40,19 @@ class GNNModel(torch.nn.Module):
         
         # build fully connected graph
         adj = torch.ones((x.size(dim=0)), x.size(dim=0))
-        # add batch dim 
-        #adj  = adj[None, :]
         # gnn pass
-        for i in range(self.num_layers):
-            x = self.convs[i](x, adj)
-            x = F.relu(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
+        #for i in range(self.num_layers):
+        #    x = self.convs[i](x, adj)
+        #    x = F.relu(x)
+        #    x = F.dropout(x, p=self.dropout, training=self.training)
 
         
         # Take embeddings and for every edge pass FC layers 
-        x = torch.squeeze(x) # remove first (batch) dim
+        #x = torch.squeeze(x) # remove first (batch) dim
         adj = torch.triu(adj, diagonal=1)
         edge_index = adj.nonzero().t().contiguous()
 
-        edge_embeddings = x[edge_index[0]] * x[edge_index[1]] # (E, d)
+        edge_embeddings = torch.cat((x[edge_index[0]], x[edge_index[1]]), 1) 
 
         # FC Layers 
         o = edge_embeddings

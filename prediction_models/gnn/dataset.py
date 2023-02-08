@@ -21,6 +21,7 @@ class CustomGraphDataset(Dataset):
 
     """
     def __init__(self, graphs: List[Graph]):
+        print("Preparing dataset...")
         self.graphs = graphs
         self.parts_lists = [list(graph.get_parts()) for graph in self.graphs]
         # Sort the parts to reduce possible combinations
@@ -33,6 +34,7 @@ class CustomGraphDataset(Dataset):
 
             adj_matr_tensor = torch.tensor(g.get_adjacency_matrix(part_order=p), dtype=torch.float32)    
             self.dataset.append((parts_tensor, adj_matr_tensor))
+        print("Finished preparing dataset.")
 
     def __len__(self):
         return len(self.graphs)
