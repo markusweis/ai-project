@@ -18,18 +18,22 @@ class DatasetRetriever:
     __instance = None
 
     @classmethod
-    def instance(cls):
+    def instance(cls, override_path = None):
         if cls.__instance is None:
-            cls()
+            cls(override_path=override_path)
         return cls.__instance
 
-    def __init__(self):
+    def __init__(self, override_path = None):
         if self.__instance is not None:
             raise Exception("Singleton instantiated multiple times!")
 
         DatasetRetriever.__instance = self
 
         print("Loading datasets...")
+        path = 'data/graphs.dat'
+        if override_path is not None:
+            path = override_path
+
         with open('data/graphs.dat', 'rb') as file:
             all_graphs_list = pickle.load(file)
 
@@ -59,7 +63,7 @@ class DatasetRetriever:
         """
         return self.all_graphs[self._idxs[self._test_size + self._val_size:]]
 
-    def get_evaluation_graphs(self) -> np.array:
+    def get_validation_graphs(self) -> np.array:
         """
         Loads all evaluation subset of graphs
         """

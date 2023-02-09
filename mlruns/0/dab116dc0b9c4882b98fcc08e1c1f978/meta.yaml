@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/dab116dc0b9c4882b98fcc08e1c1f978/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: dab116dc0b9c4882b98fcc08e1c1f978
+run_name: gnn_model
+run_uuid: dab116dc0b9c4882b98fcc08e1c1f978
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1675950073616
+status: 1
+tags: []
+user_id: vscode

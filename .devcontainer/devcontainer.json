@@ -20,5 +20,5 @@
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
 
-	"runArgs": ["--name", "ai_project_devcontainer", "--memory=12gb"]
+	"runArgs": ["--name", "ai_project_devcontainer", "--memory=6gb"]
 }

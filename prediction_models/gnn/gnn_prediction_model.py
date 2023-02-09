@@ -1,3 +1,4 @@
+import os
 import pickle
 from enum import Enum
 from itertools import permutations
@@ -12,12 +13,13 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
-
+from dataset_retriever import DatasetRetriever
+from ray import tune
+from evaluation import evaluate_edge_accuracy
 from graph import Graph
 from node import Node
 from part import Part
 from prediction_models.base_prediction_model import BasePredictionModel
-from prediction_models.gnn.meta_parameters import *
 from prediction_models.gnn.dataset import CustomGraphDataset
 from torch_geometric.utils import negative_sampling
 from prediction_models.gnn import meta_parameters
@@ -33,21 +35,41 @@ print(f"Using {device} device")
 class GNNPredictionModel(BasePredictionModel):
     """wraps the GNN Model and LinkPredictor for saving, training, ..."""
 
-    def __init__(self):
+    def __init__(self, config_override: dict = None):
+        # Meta parameter configuration:
+        self.num_gnn_layers = meta_parameters.NUM_GNN_LAYERS
+        self.embedding_features = meta_parameters.EMBDEDDING_FEATURES
+        self.num_fc_layers = meta_parameters.NUM_FC_LAYERS
+        self.fc_features = meta_parameters.FC_FEATURES
+        self.learning_rate = meta_parameters.LEARNING_RATE
+        self.weight_decay = meta_parameters.WEIGHT_DECAY
+        self.dropout = meta_parameters.DROPOUT
+        if config_override is not None:
+            self.num_gnn_layers = config_override.get("NUM_GNN_LAYERS")
+            self.embedding_features = config_override.get("EMBDEDDING_FEATURES")
+            self.num_fc_layers = config_override.get("NUM_FC_LAYERS")
+            self.fc_features = config_override.get("FC_FEATURES")
+            self.learning_rate = config_override.get("LEARNING_RATE")
+            self.weight_decay = config_override.get("WEIGHT_DECAY")
+            self.dropout = config_override.get("DROPOUT")
+
+        self.learning_epochs = meta_parameters.LEARNING_EPOCHS
+
+        # Instance
         self.step = 0 
         self.epoch = 1
         self._model: GNNModel = GNNModel(
-            (2 * (MAX_SUPPORTED_PART_ID + 1)),  # F
-            EMBDEDDING_FEATURES,
-            NUM_GNN_LAYERS,
-            FC_FEATURES,
-            NUM_FC_LAYERS,
-            DROPOUT
+            (2 * (meta_parameters.MAX_SUPPORTED_PART_ID + 1)),  # F
+            self.embedding_features,
+            self.num_gnn_layers,
+            self.fc_features,
+            self.num_fc_layers,
+            self.dropout
         ).to(device)
         
         self._optimizer = torch.optim.Adam(
             list(self._model.parameters()),
-            lr=LEARNING_RATE, weight_decay=WD
+            lr=self.learning_rate, weight_decay=self.weight_decay
         )
 
         self._loss = nn.BCELoss()
@@ -59,16 +81,19 @@ class GNNPredictionModel(BasePredictionModel):
         """
         return "gnn_model"
 
-    @classmethod
     def get_meta_params(self) -> dict:
         """
         :return: Dict containing all used meta parameters
         """
         return {
-            "EMBDEDDING_DIMS": meta_parameters.EMBDEDDING_FEATURES,
-            "HIDDEN_LAYERS_SIZE": meta_parameters.FC_FEATURES,
-            "LEARNING_RATE": meta_parameters.LEARNING_RATE,
-            "DROPOUT": meta_parameters.DROPOUT
+            "NUM_GNN_LAYERS": self.num_gnn_layers,
+            "EMBDEDDING_FEATURES": self.embedding_features,
+            "NUM_FC_LAYERS": self.num_fc_layers,
+            "HIDDEN_LAYERS_SIZE": self.fc_features,
+            "LEARNING_RATE": self.learning_rate,
+            "WEIGHT_DECAY": self.weight_decay,
+            "DROPOUT": self.dropout,
+            "LEARNING_EPOCHS": self.learning_epochs
         }
 
     @classmethod
@@ -113,7 +138,7 @@ class GNNPredictionModel(BasePredictionModel):
         parts_tensor = torch.tensor(
              [(part.get_part_id(), part.get_family_id()) for part in parts_list])
         parts_tensor = torch.nn.functional.one_hot(parts_tensor, 
-            MAX_SUPPORTED_PART_ID + 1).float().to(device)
+            meta_parameters.MAX_SUPPORTED_PART_ID + 1).float().to(device)
         parts_tensor = torch.flatten(parts_tensor, start_dim=1)
         self._model.eval()
         with torch.no_grad():
@@ -137,18 +162,28 @@ class GNNPredictionModel(BasePredictionModel):
         for t in range(epochs):
             self.train_and_validate(train_dataset, val_dataset)
 
-
     @classmethod
-    def train_new_instance(cls, train_set: np.ndarray, val_set: np.ndarray):
+    def train_new_instance(cls, config_override: dict = None, checkpoint_dir=None, data_dir=None):
         """
         This method trains the prediction model with the given graphs 
         :param train_graphs: List of graphs to train with        
         """
-        new_instance = cls()
+        # Load instances:
+        dataset_retriever = DatasetRetriever.instance(override_path=data_dir)
+        train_set = dataset_retriever.get_training_graphs()
+        val_set = dataset_retriever.get_validation_graphs()
+
+        new_instance = cls(config_override)
         train_dataset = CustomGraphDataset(train_set)
         val_dataset = CustomGraphDataset(val_set)
 
         mlflow.log_params(new_instance.get_meta_params())
+
+        if checkpoint_dir:
+            model_state, optimizer_state = torch.load(
+                os.path.join(checkpoint_dir, "checkpoint"))
+            new_instance._model.load_state_dict(model_state)
+            new_instance._optimizer.load_state_dict(optimizer_state)
 
         print("Starting training...")
 
@@ -161,6 +196,16 @@ class GNNPredictionModel(BasePredictionModel):
                 new_instance.epoch <= meta_parameters.LEARNING_EPOCHS):
             prev_normalized_val_loss = normalized_val_loss
             normalized_val_loss = new_instance.train_and_validate(train_dataset, val_dataset)
+            print("Calculating edge accuracy on evaluation data:")
+            edge_acc_validation = evaluate_edge_accuracy(new_instance, dataset_retriever.get_validation_graphs())
+            print(f"Evaluation edge accuracy score on the evaluation dataset: {edge_acc_validation}")
+
+            with tune.checkpoint_dir(new_instance.epoch) as checkpoint_dir:
+                path = os.path.join(checkpoint_dir, "checkpoint")
+                torch.save((new_instance._model.state_dict(), new_instance._optimizer.state_dict()), path)
+
+            tune.report(loss=normalized_val_loss, accuracy=edge_acc_validation)
+
         mlflow.log_metric("training_epochs", new_instance.epoch - 1)
         return new_instance
 

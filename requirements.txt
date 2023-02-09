@@ -17,6 +17,8 @@ mlflow
 
 lovely_tensors
 
+ray[tune] # Hyperparameter tuning
+
 # Torch geometric is also required, but does not work to be installed directly within this file.
 # Check the instructions at https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html to manually install it:
 # pip install pyg-lib torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html

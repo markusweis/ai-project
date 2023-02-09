@@ -72,15 +72,4 @@ B Batch size
 F Number of Features -> 2 (id, family id)
 d Number of Dimensions in the embbeding 
 
-if torch.geometric functions are every necessary, it is possible to convert like this: 
-data = Data(x=parts_list_tensor, edge_index=edge_index)
-
-Unklarheiten (Timo Fragen)
-In dem Blog werden die Node Features nicht benutzt. Das Embedding Modell wird immer nur auf 
-den Embeddings aufgerufen. Kann man das überhaupt so machen, wie ich das versuche? 
-Batch size? 
-
-
-Fragen Timo -> Markus:
-- Wie kommst du auf die Layer-Zusammensetzung im Baseline neural_network_prediction_model? Mir kommt es etwas gering vor, dass du in einer Zwischenstufe nur 32 Verbindungen hast
 
