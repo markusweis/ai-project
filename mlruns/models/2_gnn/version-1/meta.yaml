@@ -1,0 +1,12 @@
+creation_timestamp: 1675982934771
+current_stage: None
+description: ''
+last_updated_timestamp: 1675982934771
+name: 2_gnn
+run_id: 278197c940204ea09d4148d6e32f7544
+run_link: ''
+source: mlflow-artifacts:/0/278197c940204ea09d4148d6e32f7544/artifacts/gnn_model
+status: READY
+status_message: null
+user_id: null
+version: 1

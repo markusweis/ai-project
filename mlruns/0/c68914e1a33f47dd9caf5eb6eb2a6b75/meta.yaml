@@ -1,5 +1,5 @@
 artifact_uri: mlflow-artifacts:/0/c68914e1a33f47dd9caf5eb6eb2a6b75/artifacts
-end_time: null
+end_time: 1675959930268
 entry_point_name: ''
 experiment_id: '0'
 lifecycle_stage: active
@@ -10,6 +10,6 @@ source_name: ''
 source_type: 4
 source_version: ''
 start_time: 1675959369670
-status: 1
+status: 3
 tags: []
 user_id: vscode

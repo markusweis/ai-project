@@ -63,7 +63,23 @@ Multiple models were designed and trained within this project. See here for a de
 
 ### Currently Best Model:
 
-to be defined...
+GNN with the following meta-parameters:
+
+- NUM_GNN_LAYERS=1
+- EMBDEDDING_FEATURES = 64
+- NUM_FC_LAYERS=2
+- FC_FEATURES = 256
+- LEARNING_RATE=  0.001
+- WEIGHT_DECAY= 0
+- DROPOUT=0
+
+Achieved accuracy on the validation set: 97.31
+Achieved accuracy on the test set: 97.19
+
+You can find the model in `prediction_models/model_instances/FINAL_GNN.pth` Alternatively, you can download this model [here](https://nextcloud.timo-peter.de/s/TLACy5HwLH2spde).
+The MLflow instance can be found [here](http://127.0.0.1:5000/#/experiments/0/runs/278197c940204ea09d4148d6e32f7544).
+
+Store the model locally and use evaluation.py as described above to use it on the test-set.
 
 ## Notation
 N Number of Nodes
@@ -71,16 +87,3 @@ E Nuber of Edges
 B Batch size 
 F Number of Features -> 2 (id, family id)
 d Number of Dimensions in the embbeding 
-
-if torch.geometric functions are every necessary, it is possible to convert like this: 
-data = Data(x=parts_list_tensor, edge_index=edge_index)
-
-Unklarheiten (Timo Fragen)
-In dem Blog werden die Node Features nicht benutzt. Das Embedding Modell wird immer nur auf 
-den Embeddings aufgerufen. Kann man das überhaupt so machen, wie ich das versuche? 
-Batch size? 
-
-
-Fragen Timo -> Markus:
-- Wie kommst du auf die Layer-Zusammensetzung im Baseline neural_network_prediction_model? Mir kommt es etwas gering vor, dass du in einer Zwischenstufe nur 32 Verbindungen hast
-

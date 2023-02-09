@@ -30,7 +30,8 @@ from prediction_models.prediction_models_enum import PredictionModels, get_model
 # SELECTED_MODEL_PATH = "prediction_models/model_instances/BASE_DNN.pth"
 
 SELECTED_MODEL_TYPE = PredictionModels.GNN.value
-SELECTED_MODEL_PATH = "prediction_models/model_instances/GNN2.pth"
+SELECTED_MODEL_PATH = "prediction_models/model_instances/FINAL_GNN.pth"
+
 
 def load_model(file_path: str, model_type: str = SELECTED_MODEL_TYPE):
     """

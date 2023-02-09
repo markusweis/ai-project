@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import pickle
 from enum import Enum
 from itertools import permutations
@@ -90,8 +91,12 @@ class GNNPredictionModel(BasePredictionModel):
         """
         loaded_instance = cls()
         loaded_instance._model.to(device)
-        checkpoint = torch.load(file_path)
-        loaded_instance._model.load_state_dict(checkpoint)
+        state_dict_or_model = torch.load(file_path)
+        
+        if isinstance(state_dict_or_model, GNNModel):
+            loaded_instance._model = state_dict_or_model
+        else:
+            loaded_instance._model.load_state_dict(state_dict_or_model)
         return loaded_instance
 
     def store_model(self, file_path: str):
