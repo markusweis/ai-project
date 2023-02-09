@@ -1,0 +1,12 @@
+creation_timestamp: 1675983012911
+current_stage: None
+description: ''
+last_updated_timestamp: 1675983012911
+name: 1_6_fully_connected_nn_one_hot_encoding
+run_id: fa48afc72b5e436aabb0015d94de192b
+run_link: ''
+source: mlflow-artifacts:/0/fa48afc72b5e436aabb0015d94de192b/artifacts/base_neural_network_model
+status: READY
+status_message: null
+user_id: null
+version: 7

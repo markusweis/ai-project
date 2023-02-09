@@ -149,7 +149,13 @@ class NeuralNetworkPredictionModel(BasePredictionModel):
         :return: the loaded prediction model
         """
         loaded_instance = cls()
-        loaded_instance.model.load_state_dict(torch.load(file_path))
+
+        state_dict_or_model = torch.load(file_path)
+        
+        if isinstance(state_dict_or_model, BaseNeuralNetworkModelDefinition):
+            loaded_instance.model = state_dict_or_model
+        else:
+            loaded_instance.model.load_state_dict(state_dict_or_model)
         return loaded_instance
 
     def log_pytorch_models_to_mlflow(self):

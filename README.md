@@ -74,9 +74,11 @@ GNN with the following meta-parameters:
 - DROPOUT=0
 
 Achieved accuracy on the validation set: 97.31
-Achieved accuracy on the test set: ?
+Achieved accuracy on the test set: 97.19
 
-You can download this model directly [here](https://nextcloud.timo-peter.de). 
+You can find the model in `prediction_models/model_instances/FINAL_GNN.pth` Alternatively, you can download this model [here](https://nextcloud.timo-peter.de/s/TLACy5HwLH2spde).
+The MLflow instance can be found [here](http://127.0.0.1:5000/#/experiments/0/runs/278197c940204ea09d4148d6e32f7544).
+
 Store the model locally and use evaluation.py as described above to use it on the test-set.
 
 ## Notation
