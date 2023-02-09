@@ -435,13 +435,34 @@ Main finding: Worse than without this additional focus -> Idea dropped.
 - MAX_SUPPORTED_PART_ID = 2270
 - MAX_SUPPORTED_FAMILY_ID = 100
 
+----------------------------------------
 
 ## 2. Graph-convolutional Neural Network
+In addition to the fully connected neural network in experiments 1.x, we also developed a solution based on a Graph Convolutional Network (GNN). The goal is to leverage this more specified mechanism to achieve both a better accuracy with the same training set and to remove the necessity of adding a padding to support different amount of parts.
 
+**SELECTED_MODEL_TYPE:** GNN
 
----------------------------
+Already the first version of our GNN achieved a significantly better accuracy of 94.02. The meta-parameters were tweaked afterwards to further optimize the results. Starting with randomized alternations, we discovered that smaller models with less layers and actually achieve better in our case. Based on this observation, the latter experiments were more targeted with little changes over the previously best model (With multiple alternations running at the same time, which reflects in the choices not being based on the previous row at all times).
 
-General further ideas:
-- graph-attention?
-- graph-transformer?
-- Generate more training-data?
+The following table gives an overview over the different tested configurations:
+
+| NUM __GNN _LAYERS | EMBDEDDING __FEATURES | NUM _FC _LAYERS | FC _FEATURES | LEARNING _RATE | WEIGHT _DECAY | DROPOUT | Val. Edge Acc. | Val. Loss |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 8   | 128 | 8   | 1024 | 0.002 | 0   | 0.2 | 94.02 | 0.110 |
+| 8   | 512 | 8   | 1024 | 0.02 | 0.01 | 0.3 | 70.17 | 28.95 |
+| 4   | 128 | 8   | 512 | 0.02 | 0.1 | 0.2 | 70.17 | 0.602 |
+| 10  | 128 | 4   | 256 | 0.02 | 0.1 | 0.2 | 70.17 | 0.602 |
+| 10  | 128 | 4   | 256 | 0.002 | 0.1 | 0.2 | 70.17 | 0.602 |
+| 4   | 128 | 8   | 512 | 0.002 | 0.1 | 0.2 | 70.17 | 0.602 |
+| 6   | 64  | 6   | 512 | 0.002 | 0.1 | 0.2 | 70.17 | 0.602 |
+| 4   | 128 | 8   | 512 | 0.002 | 0   | 0.2 | 96.85 | 0.059 |
+| 10  | 128 | 4   | 256 | 0.002 | 0   | 0.2 | 93.89 | 0.109 |
+| 6   | 64  | 6   | 512 | 0.002 | 0   | 0.2 | 94.52 | 0.091 |
+| 3   | 64  | 10  | 512 | 0.001 | 0   | 0.2 | 96.33 | 0.069 |
+| 2   | 128 | 12  | 512 | 0.001 | 0   | 0.2 | 96.93 | 0.057 |
+| 2   | 64  | 4   | 512 | 0.01 | 0   | 0.2 | 97.07 | 0.054 |
+| 1   | 128 | 14  | 512 | 0.001 | 0   | 0.2 | 97.13 | 0.058 |
+| 1   | 64  | 3   | 512 | 0.001 | 0   | 0.2 | 97.25 | 0.048 |
+| 1   | 128 | 12  | 1024 | 0.001 | 0   | 0.2 | 96.85 | 0.062 |
+
+In total, the GNN achieves a maximum accuracy on the validation set of 97.31.
