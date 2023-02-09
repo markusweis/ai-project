@@ -47,10 +47,15 @@ class GNNPredictionModel(BasePredictionModel):
         
         self._optimizer = torch.optim.Adam(
             list(self._model.parameters()),
-            lr=LEARNING_RATE, weight_decay=WD
+            lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
         )
 
         self._loss = nn.BCELoss()
+
+        print("Using model:")
+        print(self._model)
+        print("Meta-parameters:")
+        print(self.get_meta_params())
     
     @classmethod
     def get_name(self) -> str:
@@ -65,9 +70,14 @@ class GNNPredictionModel(BasePredictionModel):
         :return: Dict containing all used meta parameters
         """
         return {
-            "EMBDEDDING_DIMS": meta_parameters.EMBDEDDING_FEATURES,
-            "HIDDEN_LAYERS_SIZE": meta_parameters.FC_FEATURES,
+            "NUM_GNN_LAYERS": meta_parameters.NUM_GNN_LAYERS,
+            "EMBDEDDING_FEATURES": meta_parameters.EMBDEDDING_FEATURES,
+
+            "NUM_FC_LAYERS": meta_parameters.NUM_FC_LAYERS,
+            "FC_FEATURES": meta_parameters.FC_FEATURES,
+
             "LEARNING_RATE": meta_parameters.LEARNING_RATE,
+            "WEIGHT_DECAY":meta_parameters.WEIGHT_DECAY,
             "DROPOUT": meta_parameters.DROPOUT
         }
 
