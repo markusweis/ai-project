@@ -440,9 +440,11 @@ Main finding: Worse than without this additional focus -> Idea dropped.
 ## 2. Graph-convolutional Neural Network
 In addition to the fully connected neural network in experiments 1.x, we also developed a solution based on a Graph Convolutional Network (GNN). The goal is to leverage this more specified mechanism to achieve both a better accuracy with the same training set and to remove the necessity of adding a padding to support different amount of parts.
 
+The idea is to construct a fully connected graph from a parts list, and then use GNN layers to generate node embeddings that can hold information about the relationships between other parts in the list if necessary. These node embeddings are combined for every potential edge, and fed into a fully connected neural network that predicts the likelihood of a connection between the corresponding nodes. Based on this prediction, the n-1 highest predicted edges are selected, where n represents the number of nodes in the resulting graph.
+
 **SELECTED_MODEL_TYPE:** GNN
 
-Already the first version of our GNN achieved a significantly better accuracy of 94.02. The meta-parameters were tweaked afterwards to further optimize the results. Starting with randomized alternations, we discovered that smaller models with less layers and actually achieve better in our case. Based on this observation, the latter experiments were more targeted with little changes over the previously best model (With multiple alternations running at the same time, which reflects in the choices not being based on the previous row at all times).
+Already the first version of our GNN achieved a significantly better accuracy of 94.02. The meta-parameters were tweaked afterwards to further optimize the results. Starting with randomized alternations, we discovered that smaller models with less layers and actually achieve better results. Based on this observation, the latter experiments were more targeted with little changes over the previously best model (With multiple alternations running at the same time, which reflects in the choices not being based on the previous row at all times).
 
 The following table gives an overview over the different tested configurations:
 

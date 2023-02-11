@@ -80,10 +80,3 @@ You can find the model in `prediction_models/model_instances/FINAL_GNN.pth` Alte
 The MLflow instance can be found [here](http://127.0.0.1:5000/#/experiments/0/runs/278197c940204ea09d4148d6e32f7544).
 
 Store the model locally and use evaluation.py as described above to use it on the test-set.
-
-## Notation
-N Number of Nodes
-E Nuber of Edges 
-B Batch size 
-F Number of Features -> 2 (id, family id)
-d Number of Dimensions in the embbeding 
